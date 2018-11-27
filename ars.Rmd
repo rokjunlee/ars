@@ -1,0 +1,7 @@
+---
+title: 'Stat243: Final Group Project'
+author: "Malvika Rajeev, Yihuan Song, RJ Lee"
+date: "11/27/2018"
+output: html_document
+---
+
