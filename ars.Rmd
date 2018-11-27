@@ -2,6 +2,43 @@
 title: 'Stat243: Final Group Project'
 author: "Malvika Rajeev, Yihuan Song, RJ Lee"
 date: "11/27/2018"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
 ---
+### Library
+```{r}
+library(tidyverse)
+```
+
+
+###Sampling
+Sample $n$ points independently from f(x) by adaptive rejection sampling using following steps: 
+
+1. Initializing Step
+
+2. Sampling Step
+
+3. Updating Step
+
+
+1. Initializing Step
+```{r}
+
+```
+
+2. Sampling Step
+```{r}
+
+```
+
+3. Updating Step
+```{r}
+
+```
+
+
+
 
