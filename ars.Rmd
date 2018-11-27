@@ -31,7 +31,12 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 # From pg 342: "In general we have found two starting abscissae (k= 2) to be necessary and sufficient for computational efficiency."
 
 
-#calculate the functions Uk(X), sk(x) and 4k(x)
+    # need some ways to specify x_1 and x_k
+    # better to find x_1 as small as possible as long as derivative is positive and density is positive
+
+
+#calculate the functions u_k(X), s_k(x) and l_k(x)
+    # These are just formula <- just function
 
 
 
