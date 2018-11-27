@@ -26,16 +26,50 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 
 1. Initializing Step
 ```{r}
+# D denotes the domain of f(x)
+# Choose k starting abscissae
+# From pg 342: "In general we have found two starting abscissae (k= 2) to be necessary and sufficient for computational efficiency."
+
+
+#calculate the functions Uk(X), sk(x) and 4k(x)
+
+
 
 ```
 
 2. Sampling Step
 ```{r}
 
+# Sample a value x* from s(X)
+
+
+
+# Sample a value w independently from the unif(O, 1)
+
+
+
+# Squeezing Test 
+
+
+
+# Also evaluate (?) h(x*) and h'(x*) <- not sure
+
+
 ```
 
 3. Updating Step
 ```{r}
+#If h(x*) and h'(x*) were evaluated at the sampling step, include x* in Tk to form T_(k+ 1)
+
+
+#r elabel the elements of T_(k+1) in ascending order
+
+
+#construct the functions U_(k+1)(X), S_(k+1)(x) and I_(k+1)(x)
+
+
+# Return to the sampling step if n points have not yet been accepted
+
 
 ```
 
