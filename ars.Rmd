@@ -31,6 +31,7 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 # From pg 342: "In general we have found two starting abscissae (k= 2) to be necessary and sufficient for computational efficiency."
 
 
+
     # need some ways to specify x_1 and x_k
     # better to find x_1 as small as possible as long as derivative is positive and density is positive
 
@@ -67,7 +68,7 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 #If h(x*) and h'(x*) were evaluated at the sampling step, include x* in Tk to form T_(k+ 1)
 
 
-#r elabel the elements of T_(k+1) in ascending order
+#relabel the elements of T_(k+1) in ascending order
 
 
 #construct the functions U_(k+1)(X), S_(k+1)(x) and I_(k+1)(x)
