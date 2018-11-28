@@ -11,7 +11,32 @@ editor_options:
 ### Library
 ```{r}
 library(tidyverse)
+library(AdapSamp)
+
+rpwx <- for piecewise sampling
 ```
+
+#### Steps
+
+a) initialize X_1, ... x_K
+      how do we choose k? should be user input, user provide it
+    first x_1 : least x for which the derivate at x_1 is positive. fix k. (i.e number of x's.)
+      we need x_1 to be as low as possible for which the derivative is positive
+        we need to think of a CLEVER FUNCTION DOING THIS
+    select x_k: max x for which derivate at x is negative
+      uniform spacing using `seq()`
+        
+b) u_k and then l_k functions
+      create functions and then evaluate them
+      
+c) sample x* from the s_k(x) ; and then w from unif(0, 1)
+
+d) updating step; update T_k as, and then arrange by order; reconstruct u, k, s
+  squeeze test
+
+
+List all the mini-functions that we might need for the ultimate ars() function
+also take a look at 
 
 
 ###Sampling
