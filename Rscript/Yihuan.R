@@ -117,5 +117,30 @@ z <- (h(sp[i+1]) - h(sp[i]) - sp[i+1]*t[i+1] + sp[i]*t[i]) / (t[i] - t[i+1])
 
 
 
+
 ###
+for( i in 1:n){
+  
+  sp <- sort(sp)
+  accept = 0
+  sample <- numeric(n)
+  
+  while(!accept){
+   
+    t <- fderiv(h, sp, 1)
+    u <- function(x) h(sp[i]) + (x - sp[i])*t[i]
+    s <- exp(u) / integrate(exp(u), z0, zk)
+    l <- function(x) ((sp[i+1] - x) * h(sp[i]) + (x - sp[i]) * h(sp[i+1])) / (sp[i+1] - sp[i])
+    z <- (h(sp[i+1]) - h(sp[i]) - sp[i+1]*t[i+1] + sp[i]*t[i]) / (t[i] - t[i+1])
+    
+    u <- runif(1)
+    #assume sample xstar from s
+    
+    #squeezing and rejection tests
+    ifelse(u <= exp(l(xstar) - u(xstar)), accept = 1, ifelse(u <= exp(h(xstar) - u(xstar)),accept = 1))
+    #include xstar in sp
+    sp <- sort(c(sp, xstar))
+  }
+  sample[i] = xstar
+}
 
