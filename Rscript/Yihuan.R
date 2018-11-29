@@ -101,3 +101,21 @@ rARS <- function (n, formula, min = -Inf, max = Inf, sp)
   }
   x_final
 }
+
+#sp is vector of starting points
+
+h <- function(x) log(g(x))
+t <- fderiv(h, sp, 1)
+
+u <- h(sp[i]) + (x - sp[i])*t[i]
+s <- exp(u) / integrate(exp(u), z0, zk)
+l <- ((sp[i+1] - x) * h(sp[i]) + (x - sp[i]) * h(sp[i+1])) / (sp[i+1] - sp[i])
+z <- (h(sp[i+1]) - h(sp[i]) - sp[i+1]*t[i+1] + sp[i]*t[i]) / (t[i] - t[i+1])
+
+
+
+
+
+
+###
+
