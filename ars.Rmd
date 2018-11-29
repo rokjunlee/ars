@@ -53,7 +53,7 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 ```{r}
 # D denotes the domain of f(x)
 # Choose k starting abscissae
-# From pg 342: "In general we have found two starting abscissae (k= 2) to be necessary and sufficient for computational efficiency."
+# From pg 342: "In general we have found two starting abscissae (k = 2) to be necessary and sufficient for computational efficiency."
 
 
 

@@ -106,37 +106,59 @@ tang_line <- function(x, func_x, x1){
               y_int,       # y-intercept
               x_int))       # x-intecept
 }
-tang_line(x, y, 31)
+x <- seq(0,40)
+tang_line(x, y, 32)
 
 #-----------------------------------------------------------
 #Initializing abscissae
+
 #Sampling X_1, ..., X_k
 
 # at x_1, the derivative has to be positive if unbounded on the left
 # at x_k, the derivative has to be negative if unbounded on the right
 
 # input function will be given: ex
-dnorm(x)
+
 sorting <- function(x){
-  
+  # docstring
+    # this function orders element from smallest to the largest AFTER
+    # deleting Inf and -Inf
+    # input x is a discrete sequence of numbers 
   sort_x <- sort(x) # from smallest to largest
   
   while (sort_x[1] < .Machine$double.xmin){
     sort_x <- sort_x[-1]
   }
   
-  while (sort_x[length(n)] > .Machine$double.xmax){
-    sort_x <- sort_x[-length(n)]
+  while (sort_x[length(sort_x)] > .Machine$double.xmax){
+    sort_x <- sort_x[-length(sort_x)]
   }
-  
   return(sort_x)
 }
 
-sorting(c(-Inf, -Inf, 3, 2, Inf, Inf))
+# Checking
+sorting(c(-Inf, -Inf, 3, 2, 6, -1, Inf, Inf))
 
-#-----------------------------------------------------------
 
-Z_j <- function(){
-  
+absci <- function(func_x, xmin){
+    avg <- mean(xmin, na.rm = T)
+    func_x(avg)
+    var <- 3
+    foo <- one_two_prime(expression(func_x(x)), "x", 1)
+    return(foo)
 }
-  
+
+
+
+
+eval(one_two_prime(expression(dnorm(x)), "x", 1)) %>% eval(4)
+absci(dnorm, 2)
+dnorm(3)
+
+func <- dnorm
+boo <- 32
+one_two_prime(expression(dnorm(boo)), "boo", 1) %>% eval()
+
+
+one_two_prime(expression(x^2), "x", 1) %>% eval()
+#-----------------------------------------------------------
