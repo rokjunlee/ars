@@ -118,29 +118,48 @@ z <- (h(sp[i+1]) - h(sp[i]) - sp[i+1]*t[i+1] + sp[i]*t[i]) / (t[i] - t[i+1])
 
 
 
-###
-for( i in 1:n){
-  
-  sp <- sort(sp)
-  accept = 0
-  sample <- numeric(n)
-  
-  while(!accept){
-   
-    t <- fderiv(h, sp, 1)
-    u <- function(x) h(sp[i]) + (x - sp[i])*t[i]
-    s <- exp(u) / integrate(exp(u), z0, zk)
-    l <- function(x) ((sp[i+1] - x) * h(sp[i]) + (x - sp[i]) * h(sp[i+1])) / (sp[i+1] - sp[i])
-    z <- (h(sp[i+1]) - h(sp[i]) - sp[i+1]*t[i+1] + sp[i]*t[i]) / (t[i] - t[i+1])
+### basic function structure
+ars <- function(n, f, min, max, sp){
+  for( i in 1:n){
     
-    u <- runif(1)
-    #assume sample xstar from s
+    h <- function(x) log(g(x))
+    sp <- sort(sp)
+    accept = 0
+    sample <- numeric(n)
     
-    #squeezing and rejection tests
-    ifelse(u <= exp(l(xstar) - u(xstar)), accept = 1, ifelse(u <= exp(h(xstar) - u(xstar)),accept = 1))
-    #include xstar in sp
-    sp <- sort(c(sp, xstar))
+    while(!accept){
+      
+      t <- fderiv(h, sp, 1)  #h'(x)
+      
+      #find vector of z
+      z <- numeric(length(sp) + 1)
+      z[1] <- min
+      z[length(z)] <- max
+      for(k in 1:(length(z) - 2)){
+        z[k+1] <- (h(sp[k+1]) - h(sp[k]) - sp[k+1]*t[k+1] + sp[k]*t[k]) / (t[k] - t[k+1])
+      }
+      
+      # check where of z that x belongs to 
+      # now assume x belongs to [zj-1,zj]
+      u_func <- function(x, j) h(sp[j]) + (x - sp[j])*t[j] 
+      
+      # check where of starting points that x belongs to 
+      # now assume x belongs to [xj,xj+1]
+      # how to adjust so that ifx<x1 orx>xk,lk(x) is set equal to -inf?
+      l_func <- function(x, j) ((sp[j+1] - x) * h(sp[j]) + (x - sp[j]) * h(sp[j+1])) / (sp[j+1] - sp[j])
+      
+      s <- exp(u_func) / integrate(exp(u_func), z[i-1], z[i])
+      
+      
+      u <- runif(1)
+      #assume sampled xstar from s(how?)
+      
+      #squeezing and rejection tests
+      ifelse(u <= exp(l(xstar) - u(xstar)), accept = 1, ifelse(u <= exp(h(xstar) - u(xstar)),accept = 1))
+      #include xstar in sp
+      sp <- sort(c(sp, xstar))
+    }
+    sample[i] = xstar
   }
-  sample[i] = xstar
+  return(sample)
 }
-
