@@ -1,0 +1,35 @@
+ars <- function(rfunc, n, startingpoints,domain){
+      ##check validity of starting points 
+      startingpoints <- sort(startingpoints)
+      
+      #if no starting points provided, can take 
+      #x1 = mean - 1s.d
+      #x2 = mean + 1s.d
+      
+      
+      ##normalise density
+      
+      how?
+        
+      
+      ##checking logconcavity of function
+      h <- function(x) {log(rfunc(x))}
+      
+      ##first derivate test
+      r <- domain ##function should be monotonically decreasing
+      if (!fderiv(h, fderiv)==sort(h, decreasing = TRUE){print("function isnt log-concave")
+      }
+      
+      ##second derivative test 
+      ## test is to check second derivate is non-positive
+      if (fderiv(h, fderiv, 2) > 0) {(print("function isnt log concave"))}
+      
+        
+      
+      
+      
+      
+      
+      
+      
+      
