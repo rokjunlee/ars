@@ -24,6 +24,10 @@ ars <- function(rfunc, n, startingpoints,domain){
       ## test is to check second derivate is non-positive
       if (fderiv(h, fderiv, 2) > 0) {(print("function isnt log concave"))}
       
+      Let P = (x, ln f(x)) be a point on the logarithm of the density
+f(x), f(x) is log-concave with respect to x if:
+gradient of chord P2P3-gradient of chord P1P2 ≤ 0
+for any x1 < x2 < x3 within its domain.  
         
       
       
