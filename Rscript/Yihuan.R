@@ -193,4 +193,113 @@ ars <- function(n, f, min, max, sp){
     sample[i] = xstar
   }
   return(sample)
-}
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  ###test
+  ### basic function structure
+  ars <- function(n, f, min, max, sp, xstar){
+    for( i in 1:n){
+      g_func <- function(input_func, min, max, x){
+        # docstring:
+        # input_func is the underlying density function
+        # left_b and right_b are lower and upper bound, respectively
+        # x is where you want to evaluate
+        # after calculating the normalizing constant c  
+        # this function simply creates g as described in the paper
+        
+        c <- integrate(input_func, left_b, right_b)$value #normalizing constant
+        g <- c * input_func(x)
+        return(g)
+      }
+      
+      h <- function(x) log(g_func(x))
+      sp <- sort(sp)
+      accept = 0
+      sample <- numeric(n)
+      
+      while(!accept){
+        
+        dh <- function(h, sp) {fderiv(h, sp, 1)  #h'(x)}
+          
+          #find vector of z
+          Z <- function(sp){
+            # docstring
+            # Tries to locate z_j's which are points where upper tangent segments
+            # intersect with each other, with z0 set as min and zk set as max
+            # sp are the starting points
+            
+            z <- numeric(length(sp) + 1)
+            z[1] <- min
+            z[length(z)] <- max
+            
+            h_e <- h(sp)              # evaluate original function at x
+            h_e_1 <- h_e[-1]           # discard first element
+            h_e_k <- h_e[-length(sp)]          # discard last element 
+            
+            hprime_e <- dh(sp)      # evaluate first derivative function at x
+            hprime_e_1 <- dh[-1] # discard first element 
+            hprime_e_k <- dh[-length(sp)] # discard last element 
+            
+            sp_1 <- sp[-1]               # discard first element 
+            sp_k <- sp[-length(sp)]               # discard last element
+            
+            numerator <- h_e_1 - h_e_k - sp_1 * hprime_e_1 + sp_k * hprime_e_k
+            denominator <- hprime_e_k - hprime_e_1
+            
+            z[2:(length(z)-1)] <- numerator/denominator    # formula for z
+            
+            
+            return(z)
+          }
+          
+          
+          u_func = function(x, sp) 
+          {
+            # docstring
+            # function calculates the upper hull piece corresponding to 
+            # the data sampled from Sk
+            # sp is the starting points
+            # x is the sampled point
+            z <- Z(sp)
+            index = findInterval(x, z)
+            u <- h(sp[index]) + (x - sp[index])*dh[index]
+            return(u)
+          }
+          
+          
+          l_func <- function(x, sp) {
+            # docstring
+            # function calculates the lower hull piece corresponding to 
+            # the data sampled from Sk, set to -inf if x<x1 or x>xk
+            # sp is the starting points
+            # x is the sampled point
+            index <- findInterval(x, c(min, sp, max))
+            
+            if (x <= sp[(length(sp))]) & x >= sp[1]){
+              l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+                l<- -inf
+              }
+
+          }
+          
+          
+          
+          u <- runif(1)
+          #assume sampled xstar from s(how?)
+          
+          #squeezing and rejection tests
+          ifelse(u <= exp(l_func(xstar, sp) - u_func(xstar, sp)), accept = 1, ifelse(u <= exp(h(xstar) - u_func(xstar, sp)),accept = 1))
+          #include xstar in sp
+          sp <- sort(c(sp, xstar))
+        }
+        sample[i] = xstar
+      }
+      return(sample)
+    }

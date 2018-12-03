@@ -144,7 +144,7 @@ ars <- function(n, f, min, max, sp){
     
     while(!accept){
       
-      dh <- function(h, sp) {fderiv(h, sp, 1)  #h'(x)}
+      dh <- function(h, sp) {fderiv(h, sp, 1)  } #h'(x)
       
       #find vector of z
         Z <- function(sp){
