@@ -1,5 +1,25 @@
 # Commands/Functions that might be useful
 
+library(tidyverse)
+
+#-----------------------------------------------------------
+
+# Experiment
+  # to input density commands such as dnorm() as an input
+experiment <- function(f,x){
+  y <- function(x) f(x)
+  y(x) # now y is f whatever f is
+}
+
+#Checking
+experiment(dnorm, 0)
+dnorm(0)
+experiment(dnorm, 0) == dnorm(0)  #TRUE
+
+ex <- experiment( function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), 0.4)
+dbeta(0.4, shape1 = 0.2, shape2 = 0.3)
+ex == dbeta(0.4, shape1 = 0.2, shape2 = 0.3)  #TRUE
+
 #-----------------------------------------------------------
 # uniform distribution
   runif()
@@ -9,29 +29,32 @@
   #integrate(f, lower, upper)
   integrate(dnorm, -1.96, 1.96) # approx 0.95
   integrate(dnorm, -Inf, Inf) # approx 1
+
+  # just get the value with $value
+  integrate(dnorm, -Inf, Inf)$value  #1
   
 #-----------------------------------------------------------  
-# creating g(x) = cf(x)
+# Creating g(x) = cf(x)
   # c is the normalizing constant
   g_func <- function(input_func, left_b, right_b, x){
   # docstring:
-      # input_func is the density function
+      # input_func is the underlying density function
       # left_b and right_b are lower and upper bound, respectively
       # x is where you want to evaluate
+      # after calculating the normalizing constant c  
       # this function simply creates g as described in the paper
-      # after calculating the normalizing constant c
     
     c <- integrate(input_func, left_b, right_b)$value #normalizing constant
     g <- c * input_func(x)
     return(g)
   }
 
-# Check 
+# Checking
   integrate(dnorm, -1.96, 1.96)$value*dnorm(2) #0.05129165
   g_func(dnorm, -1.96, 1.96, 2)                #0.05129165
 
 #-----------------------------------------------------------
-# finding derivative
+# Finding derivative EXPRESSION
 deriv(~x^2, "x")                       # .grad[, "x"] gives the expression for derivative
 D(expression(x^2), "x")                # just outputs the derivative expression
 D(expression(dnorm(x)), "x")           # first derivative for normal density
@@ -68,8 +91,123 @@ one_two_prime( expression(dnorm(x)), "x", 3)  # error bc order = 3
 one_two_prime( expression(x), "x", 1)         # correct: 1
 one_two_prime( expression(x^2), "x", 2)       # correct: 2
 
+#-----------------------------------------------------------
+# To EVALUATE the differentiated expressions
+x <- 3
+one_two_prime( expression(dnorm(x)), "x", 2 ) %>% 
+  eval()                         #0.03545479
+-(dnorm(3) - 3 * (3 * dnorm(3))) #0.03545479 same as above
+
+# doesn't have to be x and x can be a vector
+ha <- c(4, 5, 6)
+one_two_prime( expression(dnorm(ha)), "ha", 2 ) %>% eval()
+
+
+eval_prime <- function(func_x, eval_pts){
+  #docstring
+    # this function evaluates original function as well as its derivative
+    # at specified locations
+    # func_x is the function
+    # eval_pts is where we want to evaluate
+    # first element corresponds to original function
+    # second element corresponds to the second function
+  
+  fprime <- D(func_x, "x") # expression for first derivative
+  x <- eval_pts            # points where I want to evaluate
+  fprime_eval <- fprime %>% eval() # evaluating first derivative
+  f_eval <- func_x %>% eval()      # evaluating original function
+  return(list(f_eval, fprime_eval))
+}
+
+
+#Checking
+#check with normal distribution
+check <- eval_prime(expression(dnorm(x)), c(1,5))
+check[[1]]    #2.419707e-01 1.486720e-06     # original function
+dnorm(c(1,5)) #2.419707e-01 1.486720e-06
+
+# first derivatives evaluations
+  # first derivative expression: -(x * dnorm(x))
+check[[2]]                          #-2.419707e-01 -7.433598e-06 
+c(-(1 * dnorm(1)), -(5 * dnorm(5))) #-2.419707e-01 -7.433598e-06
+
 
 #-----------------------------------------------------------
+# Log-Concavity Check function
+  # by numerically computing the second derivative of the function
+  # https://en.wikipedia.org/wiki/Second_derivative <- under Limit section
+
+# Expressions 
+rlang::get_expr(body(dnorm))
+rlang::get_expr(body(dbeta))
+
+# log wrapper
+logfunc <- function(func_x){
+  # docstring
+    # simply 'log's the function that you want
+    # func_x is the function that you want to 'log'
+  log_func <- function(x) {}
+  old_f <- rlang::get_expr(body(func_x))
+  body(log_func) <- rlang::get_expr(quo(log(!!old_f)))
+  return(log_func)
+}
+# Checking
+logfunc(function(x) dnorm(x))
+beta_dis <- logfunc(function(x) dbeta(x, shape1 = 0.5, shape2 = 0.5))
+beta_dis
+
+# Function that numerically calculates 2nd derivative value
+numeric_sec_deri <- function(f, x){
+  # docstring
+    # some functions are hard to derive the second derivative
+    # so this calculates second derivative value numerically
+    # f is the underlying function
+    # x is where we want to evaluate
+    # below we are taking limit as h goes to 0
+  h <- .Machine$double.eps^(1/4)
+  numerator <- f(x+h) - 2*f(x) + f(x-h)
+  denominator <- h^2
+  val <- numerator / denominator
+  return(val)
+}
+# Checking
+numeric_sec_deri(dnorm, x = 2)                           # 0.1619729
+numeric_sec_deri(function(x) dnorm(x), x = 2)            # 0.1619729
+x <- 2
+one_two_prime( expression(dnorm(x)), "x", 2 ) %>% eval() #0.1619729 same as above
+numeric_sec_deri(function(x) dnorm(x), x = 1:3) # x can be a vector
+
+# Can find the second derivative 
+# even with functions that involve MORE than ONE argument: 
+# dbeta() has shape1 and shape2 arguments that need to be provided
+numeric_sec_deri(function(x) dbeta(x, shape1 = 0.5, shape2 = 0.5), c(0.2, 0.3))
+
+
+# Log Concavity checker <- this is the main one
+logconcav_check <- function(func, x){
+  # docstring
+    # This function finds out numerical value of the second derivative
+    # at x of the func 
+    # if all of the numerical values are negative, then this function
+    # tells us that the func is log concavie. vice versa
+  result <- numeric_sec_deri(f=logfunc(func), x = x)
+  if (max(result) < 0) {     # if max is less than zero, then all are
+    cat("The Input Function is Log-Concave")    
+  } else {                   # case one or more second derivative evaluation is positive
+    cat("The Input Function is NOT Log-Concave.")
+  }
+  #return(result)
+}
+
+#Checking
+    # log concave case
+    logconcav_check(function(x) dnorm(x), c(-3:18))
+    curve(log(dnorm(x)))   # graph looks concave
+    # NOT log concave case
+    logconcav_check(function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), c(0.1, 0.2))
+    curve(log(dbeta(x, shape1 = 0.2, shape2 = 0.3) )) # definitely not concave
+#-----------------------------------------------------------
+
 #Tangent Line from Smoothing Spline Fit
 tang_line <- function(x, func_x, x1){
   # docstring:
@@ -78,7 +216,9 @@ tang_line <- function(x, func_x, x1){
       # x1 is where we want tangent point to be
       # this function draws a tangent line at x1
   
-  func <- plot(x, func_x)        # first plot
+  y <- function(x) func_x(x) 
+  y <- y(x)
+  func <- plot(x, y)        # first plot
   spl <- smooth.spline(y~x)      # create spline
   lines(spl, col = "royalblue" ) # draw spline on the plot
   
@@ -104,12 +244,101 @@ tang_line <- function(x, func_x, x1){
   
   return(list(func,        # plot
               y_int,       # y-intercept
-              x_int))       # x-intecept
+              x_int))      # x-intecept
 }
-x <- seq(0,40)
-tang_line(x, y, 32)
+
+#Checking
+x <- seq(-2, 2, length.out = 30)
+tang_line(x, function(x) dnorm(x), 0.8)
+tang_line(x, function(x) x^3, 0.3)
+
+x <- seq(0.1, 0.99, length.out = 30)
+tang_line(x, function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), 0.3)
 
 #-----------------------------------------------------------
+# Segment Joiner
+# input should be 
+    # function
+    # tangent points
+    # endpoints of each tangent segments
+
+segment <- function(f, x_vec, end_point){
+  # docstring
+    # f is the underlying function
+    # x_vector contains the tangent points
+    # end_point is the endpoints of each tangent line
+      # end_point corresponds to Z_j
+    # this function connects each tangent line
+  
+  y <- function(x) f(x)                 # y becomes the underlying function
+  y_pt <- y(x_vec)                      # y-coordinates for the x_vec
+  func <- plot(x_vec, y_pt)             # first plot the graph
+  spl <- smooth.spline(y_pt ~ x_vec)    # create spline
+  lines(spl, col = "royalblue", lwd = 3, pch = 3 )   # draw spline on the plot
+  
+  #calculate slope at each x_vec's element
+  slope <- predict(spl, 
+                   x = x_vec,    # gives you slope at x_vec
+                   deriv = 1) %>% .$y # $y contains the slope elements
+  
+  # end point calculator
+  segment_ender <- function(e){
+    # goes through each element of x_vec and calculates y-coordinate of each segment
+    
+    end <- numeric(length(slope))
+    for (i in 1:length(slope)){ #y = slope*(x - x_0) + y_0  <- using simple line equation
+      end[i] <- slope[i]*(e[i]-x_vec[i]) + y(x_vec[i]) 
+    }
+    return(end)
+  }
+  e <- segment_ender(e=end_point)
+  
+  # Draw the tangent lines
+  lines(end_point,   # end-points of each tangent segment
+        e,           # corresponding y coordinates
+        lwd = 1.5)
+}
+
+# Checking
+# with random polynomial
+segment(function(x) -x^2+x+1, 
+        seq(-1, 1, length.out = 30), 
+        end_point = seq(-1.1, 0.99, length.out = 30))
+# with sin(x)
+segment(function(x) sin(x), 
+        seq(-1, 3, length.out = 30), 
+        end_point = seq(-1.1, 2.99, length.out = 30))
+
+# with beta distribution
+segment(function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), 
+        seq(0.01, 0.99, length.out = 30), 
+        end_point = seq(0.01, 0.99, length.out = 30))
+
+#-----------------------------------------------------------
+# Function for Z_j
+#assume h and hprime are given; they are functions
+
+Z_j <- function(h , hprime, x){
+  # docstring
+  # Tries to locate z_j's which are points where upper tangent segments
+  # intersect with each other
+  n <- length(x)
+  k <- n - 1
+  z <- numeric(n)
+  for (i in 1:k){
+    numerator <- h(x[i+1]) - h(x[i]) - x[i+1] * hprime(x[i+1]) + x[i] * hprime(x[i])
+    denominator <- hprime(x[i]) - hprime(x[i+1])
+    z[i] <- numerator/denominator
+  }
+  return(z)
+}
+
+# Checking
+Z_j(dnorm, dnorm, c(1,2,3,4,5))
+
+
+#-----------------------------------------------------------
+# THIS WAS UNSUCCESSUFL 
 #Initializing abscissae
 
 #Sampling X_1, ..., X_k
@@ -161,4 +390,3 @@ one_two_prime(expression(dnorm(boo)), "boo", 1) %>% eval()
 
 
 one_two_prime(expression(x^2), "x", 1) %>% eval()
-#-----------------------------------------------------------

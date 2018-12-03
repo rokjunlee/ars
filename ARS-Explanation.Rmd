@@ -1,0 +1,33 @@
+---
+title: "ARS Explanation"
+author: "Malvika Rajeev, Yihuan Song, RJ Lee"
+date: "12/2/2018"
+output: html_document
+---
+
+### Github account for the final version of the project
+Final version of the project resides in RJ's Github account.
+Github user name: rokjunlee
+
+
+The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work.
+
+
+
+
+
+### Specific Contributoins of each team member 
+
+####Malvika Rajeev
+
+####Yihuan Song
+
+####RJ Lee
+Function that checks log concavity
+    Need to evaluate second derivative numerically
+Function that can joing tangent segments
+    Finding tangent lines
+    Simple linear models to find endpoints of each tangent lines
+
+
+
