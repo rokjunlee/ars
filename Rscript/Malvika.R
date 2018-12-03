@@ -1,5 +1,5 @@
 #malvika:::
-ars <- function(rfunc, n, startingpoints,domain){
+ars <- function(rfunc, n, startingpoints,min,max){
       ##check validity of starting points 
       startingpoints <- sort(startingpoints)
       #sanity check:
