@@ -124,18 +124,30 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 ### basic function structure
 ars <- function(n, f, min, max, sp){
   for( i in 1:n){
+    g_func <- function(input_func, min, max, x){
+  # docstring:
+      # input_func is the underlying density function
+      # left_b and right_b are lower and upper bound, respectively
+      # x is where you want to evaluate
+      # after calculating the normalizing constant c  
+      # this function simply creates g as described in the paper
     
-    h <- function(x) log(g(x))
+    c <- integrate(input_func, left_b, right_b)$value #normalizing constant
+    g <- c * input_func(x)
+    return(g)
+    }
+    
+    h <- function(x) log(g_func(x))
     sp <- sort(sp)
     accept = 0
     sample <- numeric(n)
     
     while(!accept){
       
-      hprime <- function(h, sp) {fderiv(h, sp, 1)  #h'(x)}
+      dh <- function(h, sp) {fderiv(h, sp, 1)  #h'(x)}
       
       #find vector of z
-        Z_j <- function(h , hprime, sp, x){
+        Z <- function(sp){
           # docstring
           # Tries to locate z_j's which are points where upper tangent segments
           # intersect with each other
@@ -150,9 +162,9 @@ ars <- function(n, f, min, max, sp){
           h_e_1 <- h_e[-1]           # discard first element
           h_e_k <- h_e[-length(sp)]          # discard last element 
           
-          hprime_e <- hprime(sp)      # evaluate first derivative function at x
-          hprime_e_1 <- hprime_e[-1] # discard first element 
-          hprime_e_k <- hprime_e[-length(sp)] # discard last element 
+          hprime_e <- dh(sp)      # evaluate first derivative function at x
+          hprime_e_1 <- dh[-1] # discard first element 
+          hprime_e_k <- dh[-length(sp)] # discard last element 
           
           sp_1 <- sp[-1]               # discard first element 
           sp_k <- sp[-length(sp)]               # discard last element
@@ -166,23 +178,39 @@ ars <- function(n, f, min, max, sp){
           return(z)
         }
       
-      for(k in 1:(length(z) - 2)){
-        z[k+1] <- (h(sp[k+1]) - h(sp[k]) - sp[k+1]*t[k+1] + sp[k]*t[k]) / (t[k] - t[k+1])
-      }
-      
       # check where of z that x belongs to 
       # now assume x belongs to [zj-1,zj]
-      u_func <- function(x, j) {
+     u_func = function(x, sp) 
+      {
+        uplus = rep(0, length(y)) ##changes after every iteration
+        zfixed = zfix(support) ##get the Z's
         
-        h(sp[j]) + (x - sp[j])*t[j] 
+        
+        #using findinterval
+        #findInterval(5,c(1,4,9,10)) will give us 2
+        
+        piecewise.idx = findInterval(y, c(min, zfixed, max))
+        npieces = length(zfixed) + 2
+        for (pidx in 1:npieces){
+          y_piece = y[piecewise.idx == pidx]
+          x = logfunction(support[pidx]) + (y_piece - support[pidx])*derivate(support[pidx])
+          uplus[piecewise.idx == pidx] = x
+        }
+        return(res)
       }
       
       # check where of starting points that x belongs to 
       # now assume x belongs to [xj,xj+1]
       # how to adjust so that ifx<x1 orx>xk,lk(x) is set equal to -inf?
-      l_func <- function(x, j) ((sp[j+1] - x) * h(sp[j]) + (x - sp[j]) * h(sp[j+1])) / (sp[j+1] - sp[j])
+      l_func <- function(x, sp) {
+        
+        index <- findInterval(x, c(min, sp, max))
+
+        
+        l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])
+
+      }
       
-      s <- exp(u_func) / integrate(exp(u_func), z[1], z[length(z)])
       
       
       u <- runif(1)
