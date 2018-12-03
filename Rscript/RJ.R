@@ -218,7 +218,7 @@ tang_line <- function(x, func_x, x1){
   
   y <- function(x) func_x(x) 
   y <- y(x)
-  func <- plot(x, y)        # first plot
+  func <- plot(x, y)             # first plot
   spl <- smooth.spline(y~x)      # create spline
   lines(spl, col = "royalblue" ) # draw spline on the plot
   
@@ -340,31 +340,77 @@ Z_j(function(x) dnorm(x), function(x) -(x * dnorm(x)), c(1,2,3,4,5))
 
 
 # Vectorized way 
-# for this both h and hprime must be a vector containing appropriate values
+
 Z_j <- function(h , hprime, x){
   # docstring
-  # Tries to locate z_j's which are points where upper tangent segments
-  # intersect with each other
-  h_e <- h(x)
-  h_e_1 <- h_e[-1]
+      # Tries to locate z_j's which are points where upper tangent segments
+      # intersect with each other
+      # h (=ln(g(x))) is the original function and hprime is the first derivative of h
+      # x are the sampled points
   
-  hprime_e <- hprime(x)
-  hprime_e_1 <- hprime_e[-1]
+  h_e <- h(x)                # evaluate original function at x
+  h_e_1 <- h_e[-1]           # discard first element 
   
-  x_1 <- x[-1]
+  hprime_e <- hprime(x)      # evaluate first derivative function at x
+  hprime_e_1 <- hprime_e[-1] # discard first element 
+  
+  x_1 <- x[-1]               # discard first element 
   
   n <- length(x)
-  z <- numeric(n)
+  z <- numeric(n)            # where result will be stored
   
   numerator <- h_e_1 - h_e - x_1 * hprime_e_1 + x * hprime_e
   denominator <- hprime_e - hprime_e_1
   
-  z <- numerator/denominator
+  z <- numerator/denominator # formula for z
   return(z)
 }
 
-Z_j(dnorm, dnorm, c(1,2,3,4,5)) # -0.2872169  0.9105745  1.9688623  2.9887662  0.9999174
-#Same answer as the FIRST Z_j except for the last element
+Z_j(dnorm, function(x) -(x * dnorm(x)), c(1,2,3,4,5)) # -0.2872169  0.9105745  1.9688623  2.9887662  0.9999174
+#Same answer as the FIRST non-vectorized Z_j except for the last element
+
+
+check <- eval_prime(expression(dnorm(x)), c(1,5))
+#-----------------------------------------------------------
+# Function for U_k
+
+U_k <- function(h, hprime, x_vec, x_0){
+  # docstring
+      # h is the original underlying function
+      # hprime is the first derivative of h
+      # x_vec contains sampled x
+      # x_0 is where we want to evaluate U_k
+  h_e <- h(x_vec)
+  hprime_e <- hprime(x_vec) 
+  h_e + (x_0 - x_vec) * hprime_e
+}
+# Checking
+U_k(dnorm, function(x) -(x * dnorm(x)), c(1,2,3,4,5), 3)
+
+#-----------------------------------------------------------
+# Function for S_k
+
+#-----------------------------------------------------------
+# Function for l_k
+l_k <- function(h, x_vec, x_0){
+  # docstring
+      # h is the original underlying function
+      # x_vec contains the sampled x
+      # x_0 is where we want to evaluate l_k
+  
+  x_vec_1 <- x_vec[-1]
+  
+  h_e <- h(x_vec)
+  h_e_1 <- h(x_vec_1)
+  
+  num <- (x_vec_1 - x_0) * h_e + (x_0 - x_vec) * h_e_1
+  den <- x_vec_1 - x_vec
+  
+  l <- num / den
+  return(l)
+}
+# Checking 
+l_k(dnorm, 1:4, 3)
 
 #-----------------------------------------------------------
 # THIS WAS UNSUCCESSUFL 
