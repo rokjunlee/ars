@@ -178,25 +178,13 @@ ars <- function(n, f, min, max, sp){
           return(z)
         }
       
-      # check where of z that x belongs to 
-      # now assume x belongs to [zj-1,zj]
+
      u_func = function(x, sp) 
       {
-        uplus = rep(0, length(y)) ##changes after every iteration
-        zfixed = zfix(support) ##get the Z's
-        
-        
-        #using findinterval
-        #findInterval(5,c(1,4,9,10)) will give us 2
-        
-        piecewise.idx = findInterval(y, c(min, zfixed, max))
-        npieces = length(zfixed) + 2
-        for (pidx in 1:npieces){
-          y_piece = y[piecewise.idx == pidx]
-          x = logfunction(support[pidx]) + (y_piece - support[pidx])*derivate(support[pidx])
-          uplus[piecewise.idx == pidx] = x
-        }
-        return(res)
+        z <- Z(sp)
+        index = findInterval(x, z)
+        u <- h(sp[index]) + (x - sp[index])*dh[index]
+        return(u)
       }
       
       # check where of starting points that x belongs to 
@@ -206,8 +194,10 @@ ars <- function(n, f, min, max, sp){
         
         index <- findInterval(x, c(min, sp, max))
 
-        
-        l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])
+        if (x <= sp[(length(sp))]) & x >= sp[1]){
+          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+          l<- -inf
+        }
 
       }
       
