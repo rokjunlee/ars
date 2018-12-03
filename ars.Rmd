@@ -207,7 +207,7 @@ ars <- function(n, f, min, max, sp){
       #assume sampled xstar from s(how?)
       
       #squeezing and rejection tests
-      ifelse(u <= exp(l(xstar) - u(xstar)), accept = 1, ifelse(u <= exp(h(xstar) - u(xstar)),accept = 1))
+      ifelse(u <= exp(l_func(xstar, sp) - u_func(xstar, sp)), accept = 1, ifelse(u <= exp(h(xstar) - u_func(xstar, sp)),accept = 1))
       #include xstar in sp
       sp <- sort(c(sp, xstar))
     }
