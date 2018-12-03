@@ -200,7 +200,7 @@ ars <- function(n, f, min, max, sp){
           # x is the sampled point
         index <- findInterval(x, c(min, sp, max))
 
-        if (x <= sp[(length(sp))]) & x >= sp[1]){
+        if (x <= sp[(length(sp))] & x >= sp[1]){
           l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
           l<- -inf
         }
