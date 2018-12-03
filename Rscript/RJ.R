@@ -252,6 +252,7 @@ x <- seq(-2, 2, length.out = 30)
 tang_line(x, function(x) dnorm(x), 0.8)
 tang_line(x, function(x) x^3, 0.3)
 
+# works with beta distribution 
 x <- seq(0.1, 0.99, length.out = 30)
 tang_line(x, function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), 0.3)
 
@@ -334,8 +335,36 @@ Z_j <- function(h , hprime, x){
 }
 
 # Checking
-Z_j(dnorm, dnorm, c(1,2,3,4,5))
+Z_j(dnorm, dnorm, c(1,2,3,4,5)) #-0.2872169  0.9105745  1.9688623  2.9887662  0.0000000
+Z_j(function(x) dnorm(x), function(x) -(x * dnorm(x)), c(1,2,3,4,5))
 
+
+# Vectorized way 
+# for this both h and hprime must be a vector containing appropriate values
+Z_j <- function(h , hprime, x){
+  # docstring
+  # Tries to locate z_j's which are points where upper tangent segments
+  # intersect with each other
+  h_e <- h(x)
+  h_e_1 <- h_e[-1]
+  
+  hprime_e <- hprime(x)
+  hprime_e_1 <- hprime_e[-1]
+  
+  x_1 <- x[-1]
+  
+  n <- length(x)
+  z <- numeric(n)
+  
+  numerator <- h_e_1 - h_e - x_1 * hprime_e_1 + x * hprime_e
+  denominator <- hprime_e - hprime_e_1
+  
+  z <- numerator/denominator
+  return(z)
+}
+
+Z_j(dnorm, dnorm, c(1,2,3,4,5)) # -0.2872169  0.9105745  1.9688623  2.9887662  0.9999174
+#Same answer as the FIRST Z_j except for the last element
 
 #-----------------------------------------------------------
 # THIS WAS UNSUCCESSUFL 
