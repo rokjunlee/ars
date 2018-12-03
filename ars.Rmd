@@ -18,6 +18,18 @@ rpwx <- for piecewise sampling
 
 #### Steps
 
+###FUNCTION ARGUMENTS: 
+
+
+#1. RFUNC.
+#2. N : NUMBER OF POINTS NEEDED
+#3. (OPTIONAL) STARTINGPOINTS EG C(1,2)
+#4. (OPTIONAL) DOMAIN
+
+#for now let's assume the user has input all the arguments. 
+
+
+
 a) initialize X_1, ... x_K
       how do we choose k? should be user input, user provide it
     first x_1 : least x for which the derivate at x_1 is positive. fix k. (i.e number of x's.)
@@ -63,6 +75,10 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 
 #calculate the functions u_k(X), s_k(x) and l_k(x)
     # These are just formula <- just function
+   
+ 
+ 
+ 
 
 
 
