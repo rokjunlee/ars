@@ -129,26 +129,57 @@ ars <- function(n, f, min, max, sp){
     
     while(!accept){
       
-      t <- fderiv(h, sp, 1)  #h'(x)
+      hprime <- function(h, sp) {fderiv(h, sp, 1)  #h'(x)}
       
       #find vector of z
-      z <- numeric(length(sp) + 1)
-      z[1] <- min
-      z[length(z)] <- max
+        Z_j <- function(h , hprime, sp, x){
+          # docstring
+          # Tries to locate z_j's which are points where upper tangent segments
+          # intersect with each other
+          # h (=ln(g(x))) is the original function and hprime is the first derivative of h
+          # x are the sampled points
+          
+          z <- numeric(length(sp) + 1)
+          z[1] <- min
+          z[length(z)] <- max
+          
+          h_e <- h(sp)              # evaluate original function at x
+          h_e_1 <- h_e[-1]           # discard first element
+          h_e_k <- h_e[-length(sp)]          # discard last element 
+          
+          hprime_e <- hprime(sp)      # evaluate first derivative function at x
+          hprime_e_1 <- hprime_e[-1] # discard first element 
+          hprime_e_k <- hprime_e[-length(sp)] # discard last element 
+          
+          sp_1 <- sp[-1]               # discard first element 
+          sp_k <- sp[-length(sp)]               # discard last element
+          
+          numerator <- h_e_1 - h_e_k - sp_1 * hprime_e_1 + sp_k * hprime_e_k
+          denominator <- hprime_e_k - hprime_e_1
+          
+          z <- numerator/denominator    # formula for z
+          z <- append(min, z, max)
+          
+          return(z)
+        }
+      
       for(k in 1:(length(z) - 2)){
         z[k+1] <- (h(sp[k+1]) - h(sp[k]) - sp[k+1]*t[k+1] + sp[k]*t[k]) / (t[k] - t[k+1])
       }
       
       # check where of z that x belongs to 
       # now assume x belongs to [zj-1,zj]
-      u_func <- function(x, j) h(sp[j]) + (x - sp[j])*t[j] 
+      u_func <- function(x, j) {
+        
+        h(sp[j]) + (x - sp[j])*t[j] 
+      }
       
       # check where of starting points that x belongs to 
       # now assume x belongs to [xj,xj+1]
       # how to adjust so that ifx<x1 orx>xk,lk(x) is set equal to -inf?
       l_func <- function(x, j) ((sp[j+1] - x) * h(sp[j]) + (x - sp[j]) * h(sp[j+1])) / (sp[j+1] - sp[j])
       
-      s <- exp(u_func) / integrate(exp(u_func), z[i-1], z[i])
+      s <- exp(u_func) / integrate(exp(u_func), z[1], z[length(z)])
       
       
       u <- runif(1)
