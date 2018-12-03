@@ -150,9 +150,8 @@ ars <- function(n, f, min, max, sp){
         Z <- function(sp){
           # docstring
           # Tries to locate z_j's which are points where upper tangent segments
-          # intersect with each other
-          # h (=ln(g(x))) is the original function and hprime is the first derivative of h
-          # x are the sampled points
+          # intersect with each other, with z0 set as min and zk set as max
+          # sp are the starting points
           
           z <- numeric(length(sp) + 1)
           z[1] <- min
@@ -181,17 +180,24 @@ ars <- function(n, f, min, max, sp){
 
      u_func = function(x, sp) 
       {
+          # docstring
+          # function calculates the upper hull piece corresponding to 
+          # the data sampled from Sk
+          # sp is the starting points
+          # x is the sampled point
         z <- Z(sp)
         index = findInterval(x, z)
         u <- h(sp[index]) + (x - sp[index])*dh[index]
         return(u)
       }
       
-      # check where of starting points that x belongs to 
-      # now assume x belongs to [xj,xj+1]
-      # how to adjust so that ifx<x1 orx>xk,lk(x) is set equal to -inf?
+   
       l_func <- function(x, sp) {
-        
+          # docstring
+          # function calculates the lower hull piece corresponding to 
+          # the data sampled from Sk, set to -inf if x<x1 or x>xk
+          # sp is the starting points
+          # x is the sampled point
         index <- findInterval(x, c(min, sp, max))
 
         if (x <= sp[(length(sp))]) & x >= sp[1]){
