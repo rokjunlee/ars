@@ -30,10 +30,10 @@ ars <- function(rfunc, n, startingpoints,domain){
         
         piecewise.idx = findInterval(y, c(min, zfixed, max))
         npieces = length(zfixed) + 2
-        for(pidx in 1:npieces){
+        for (pidx in 1:npieces){
           y_piece = y[piecewise.idx == pidx]
-          xx = logfunction(support[pidx]) + (y_piece - support[pidx])*derivate(support[pidx])
-          uplus[piecewise.idx == pidx] = xx
+          x = logfunction(support[pidx]) + (y_piece - support[pidx])*derivate(support[pidx])
+          uplus[piecewise.idx == pidx] = x
         }
         return(res)
       }
