@@ -3,7 +3,6 @@
 library(tidyverse)
 
 #-----------------------------------------------------------
-
 # Experiment
   # to input density commands such as dnorm() as an input
 experiment <- function(f,x){
@@ -411,6 +410,131 @@ l_k <- function(h, x_vec, x_0){
 }
 # Checking 
 l_k(dnorm, 1:4, 3)
+
+
+#-----------------------------------------------------------
+# CDF function
+cdf <- function(func_x, x){
+  # docstring 
+    # find the area under func_x and to the left of x
+    # func_x is what we are integrating
+  f <- function(x) func_x(x)
+  v <- integrate(f, -Inf, x)$value
+  return(v)
+}
+cdf(function(x) dnorm(x), 0)
+
+
+
+#-----------------------------------------------------------
+# Initializing Step
+
+is.infinite(Inf)  # TRUE
+is.infinite(-Inf) # TRUE
+is.finite(-Inf)   # FALSE
+
+numeric_first_d <- function(f, x){
+  # docstring
+    # this function numerically calculates first derivative
+    # f is the underlying function
+    # x is where we want to evaluate
+    # below we are taking limit as h goes to 0
+  h <- .Machine$double.eps^(1/4)
+  numerator <- f(x+h) - f(x)
+  denominator <- h
+  val <- numerator / denominator
+  return(val)
+}
+#Checking
+numeric_first_d(function(x) dnorm(x), 1) # -0.2419707
+eval_prime(expression(dnorm(x)), 1)[2]   # -0.2419707  # same as above
+numeric_first_d(function(x) dnorm(x), -100) # 0, because graph is essentially flat
+
+
+starting_x <- function(func_x, min_x, max_x){
+  # docstring
+    # divide into 4 cases
+    # 1: both min and max are given
+    # 2: when max is finite but min is missing or infinite
+    # 3: when min is finite but max is missing or infinite
+    # 4: otherwise
+  
+    # func_x is the underlying function
+    # min_x and max_x are min and max of f's domain
+  
+  
+  # First case
+  if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
+    
+    return(c(min_x, max_x))  # simplest case: just return min and max values
+  
+  # Second case  
+  } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
+              && is.finite(max_x) == TRUE ) { # max is finite
+    
+    if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
+      min_x <- -.Machine$integer.max # if derivative is positive then just use -.Machine$integer.max
+    } else { # otherwise slowly increase min_x until it becomes positive
+      min_x <- -1000  
+      while (numeric_first_d(function(x) func_x(x), min_x) <= 0) { 
+        print(numeric_first_d(function(x) func_x(x), min_x))
+        min_x <- min_x + 5
+        }
+    }
+    return(c(min_x, max_x))
+    
+    
+  # Third case
+  } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
+              && is.finite(min_x)==TRUE ) {  # min is finite
+    
+    if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
+      max_x <- .Machine$integer.max # if derivative is negative then just use .Machine$integer.max
+    } else {  # otherwise slowly decrease max_x until it becomes negative
+      max_x <- 1000
+      while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
+        print(numeric_first_d(function(x) func_x(x), max_x))
+        max_x <- max_x - 5
+      }
+    }
+    return(c(min_x, max_x))
+  
+  # Fourth case
+  } else {  # both min and max are infinite or both missing
+    
+    if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
+      min_x <- -.Machine$integer.max
+    } else {
+      min_x <- -1000
+      while (numeric_first_d(function(x) func_x(x), min_x) <= 0) {
+        print(numeric_first_d(function(x) func_x(x), min_x))
+        min_x <- min_x + 5
+      }
+    }
+    
+    if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
+      max_x <- .Machine$integer.max
+    } else {
+      max_x <- 1000
+      while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
+        print(numeric_first_d(function(x) func_x(x), max_x))
+        max_x <- max_x - 5
+      }
+    }
+    return(c(min_x, max_x))   
+    
+  }
+}
+
+# Checking
+starting_x(function(x) dnorm(x), min_x = 1, max_x=2)
+starting_x(function(x) dnorm(x), min_x= -Inf, max_x=2)
+starting_x(function(x) dnorm(x), min_x= -1, max_x=Inf)
+starting_x(function(x) dnorm(x), min_x= -Inf, max_x=Inf)
+starting_x(function(x) dnorm(x), min_x= NA, max_x=2)
+starting_x(function(x) dnorm(x), min_x= -1, max_x=NA)
+starting_x(function(x) dnorm(x), min_x= NA, max_x=NA)
+
 
 #-----------------------------------------------------------
 # THIS WAS UNSUCCESSUFL 
