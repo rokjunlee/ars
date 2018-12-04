@@ -19,7 +19,10 @@ The description does not need to be more than a few pages, but should describe t
 ### Specific Contributoins of each team member 
 
 ####Malvika Rajeev
-
+vectorizing computation of Zjs, 
+computing the upper linear hull, 
+computing the cdf, 
+sampling from the exponential density.
 ####Yihuan Song
 The basic structure of the ars function (for loop and while loop)
 The functions of h(x), h'(x), uk(x), lk(x), sk(x), and finding zj's
