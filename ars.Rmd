@@ -123,30 +123,32 @@ Sample $n$ points independently from f(x) by adaptive rejection sampling using f
 ```{r}
 ### basic function structure
 ars <- function(n, f, min, max, sp){
-  for( i in 1:n){
-    g_func <- function(input_func, min, max, x){
-  # docstring:
-      # input_func is the underlying density function
-      # left_b and right_b are lower and upper bound, respectively
-      # x is where you want to evaluate
-      # after calculating the normalizing constant c  
-      # this function simply creates g as described in the paper
+  
+  g_func <- function(input_func, x){
+    # docstring:
+    # input_func is the underlying density function
+    # x is where you want to evaluate
+    # after calculating the normalizing constant c  
+    # this function simply creates g as described in the paper
     
-    c <- integrate(input_func, left_b, right_b)$value #normalizing constant
+    c <- integrate(input_func, min, max)$value #normalizing constant
     g <- c * input_func(x)
     return(g)
-    }
-    
-    h <- function(x) log(g_func(x))
-    sp <- sort(sp)
-    accept = 0
-    sample <- numeric(n)
-    
-    while(!accept){
+  }
+  
+  h <- function(x) log(g_func(f, x))
+  dh <- function(x) {fderiv(h, x, 1)} #h'(x)
+  
+  sp <- sort(sp)
+  sample <- numeric(n)
+  
+    for( i in 1:n){
+  
+      accept = 0
       
-      dh <- function(h, sp) {fderiv(h, sp, 1)  } #h'(x)
-      
-      #find vector of z
+      while(!accept){
+        
+        #find vector of z
         Z <- function(sp){
           # docstring
           # Tries to locate z_j's which are points where upper tangent segments
@@ -162,8 +164,8 @@ ars <- function(n, f, min, max, sp){
           h_e_k <- h_e[-length(sp)]          # discard last element 
           
           hprime_e <- dh(sp)      # evaluate first derivative function at x
-          hprime_e_1 <- dh[-1] # discard first element 
-          hprime_e_k <- dh[-length(sp)] # discard last element 
+          hprime_e_1 <- hprime_e[-1] # discard first element 
+          hprime_e_k <- hprime_e[-length(sp)] # discard last element 
           
           sp_1 <- sp[-1]               # discard first element 
           sp_k <- sp[-length(sp)]               # discard last element
@@ -172,54 +174,56 @@ ars <- function(n, f, min, max, sp){
           denominator <- hprime_e_k - hprime_e_1
           
           z[2:(length(z)-1)] <- numerator/denominator    # formula for z
-        
+          
           
           return(z)
         }
-      
-
-     u_func = function(x, sp) 
-      {
+        
+        
+        u_func = function(x, sp) 
+        {
           # docstring
           # function calculates the upper hull piece corresponding to 
           # the data sampled from Sk
           # sp is the starting points
           # x is the sampled point
-        z <- Z(sp)
-        index = findInterval(x, z)
-        u <- h(sp[index]) + (x - sp[index])*dh[index]
-        return(u)
-      }
-      
-   
-      l_func <- function(x, sp) {
+          z <- sort(Z(sp))
+          index = findInterval(x, z)
+          u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
+          return(u)
+        }
+        
+        
+        l_func <- function(x, sp) {
           # docstring
           # function calculates the lower hull piece corresponding to 
           # the data sampled from Sk, set to -inf if x<x1 or x>xk
           # sp is the starting points
           # x is the sampled point
-        index <- findInterval(x, c(min, sp, max))
-
-        if (x <= sp[(length(sp))] & x >= sp[1]){
-          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
-          l<- -inf
+          index <- findInterval(x, c(min, sp, max))
+          
+          if (x <= sp[(length(sp))] & x >= sp[1]){
+            l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+              l<- -Inf
+            }
+          
         }
-
+        
+        
+        
+        u <- runif(1)
+        #assume sampled xstar from s(how?)
+        
+        #squeezing and rejection tests
+        if(u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { accept = 1 } 
+           else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
+             accept = 1 
+        #include xstar in sp
+        sp <- sort(c(sp, xstar))}
       }
-      
-      
-      
-      u <- runif(1)
-      #assume sampled xstar from s(how?)
-      
-      #squeezing and rejection tests
-      ifelse(u <= exp(l_func(xstar, sp) - u_func(xstar, sp)), accept = 1, ifelse(u <= exp(h(xstar) - u_func(xstar, sp)),accept = 1))
-      #include xstar in sp
-      sp <- sort(c(sp, xstar))
+      sample[i] = xstar
     }
-    sample[i] = xstar
-  }
-  return(sample)
+    return(sample)
 }
 ```
 
