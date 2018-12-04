@@ -1,137 +1,123 @@
-#malvika:::
-ars <- function(rfunc, n, startingpoints,min,max){
-      ##check validity of starting points 
-      startingpoints <- sort(startingpoints)
-      #sanity check:
-      
-      fderiv(f, start[1]) > 0
-      fderiv(f, start[2]) < 0 
-      
-      ##calculating z
-      zfix = function(support) ###a function of the support
-      {
-        yfo = head(support, n=-1) ##remove the last element
-        yf1 = tail(support, n=-1) ##remove the first element
-        zfixed = yf0 + (h(yf0) - h(yf1) + (yf1 - yf0)*derivative(yf1)) / (derivative(yf1) - derivative(yf0))
-        return(zfixed)	
-      }
-      
-      ######
-      #### unnormalized piecewise-linear upper-bound of the log-density
-      
-      u_plus = function(y, support) 
-      {
-        uplus = rep(0, length(y)) ##changes after every iteration
-        zfixed = zfix(support) ##get the Z's
-        
-        
-        #using findinterval
-        #findInterval(5,c(1,4,9,10)) will give us 2
-        
-        piecewise.idx = findInterval(y, c(min, zfixed, max))
-        npieces = length(zfixed) + 2
-        for (pidx in 1:npieces){
-          y_piece = y[piecewise.idx == pidx]
-          x = logfunction(support[pidx]) + (y_piece - support[pidx])*derivate(support[pidx])
-          uplus[piecewise.idx == pidx] = x
-        }
-        return(res)
-      }
-      
-      ##In particular, the above formulation means that we can precompute G+(zi) which means it is only 
-      ##necessary to compute the last, non-zero integral for each y.
-      
-      uplus.cdf = function(vals, support) 
-      {
-        # equivalently:  integrate(function(z) exp(hplus(z, support)), lower=-Inf, upper = vals)
-        
-        zfixed = zfix(support)
-        
-        zlen = length(support)
-        cdf_not_normalised = numeric(length(vals))
-        normaliser = 0
-        for(z_i in 0:zlen) { ##definition of CDF
-          if(z_i == 0)
-          {
-            zm = -Inf
-          } else {
-            zm = zfixed[zi]
-          }
-          
-          if(z_i == zlen)
-          {
-            zp = Inf
-          } else {
-            zp = zfixed[z_i+1]  ##list of Zs to find cumulative probabilities for
-          }
-          
-          y_piece = support[z_i+1]
-          delta = exp(log(y_piece))/derivative(y_piece) * ( exp((zp - y_piece)*derivative(y_piece)) - exp((zm - y_piece)*derivative(y_piece)) )
-          
-          cidx = zm < vals & vals <= zp
-          hidx = vals > zp
-          
-          cdf_not_normalised[cidx] = cdf_not_normalised[cidx] + exp(h(y_piece))/derivative(y_piece) * ( exp((vals[cidx] - y_piece)*derivative(y_piece)) - exp((zm - y_piece)*derivative(y_piece)) )
-          cdf_not_normalised[hidx] = cdf_not_normalised[hidx] + ds
-          
-          normaliser = normaliser + delta
-        }
-        
-        cdf_upperhull = list( 
-          cdf_normalised = cdf_not_normalised / normaliser, 
-          normaliser = normaliser
-        )
-        return(cdf_upperhull)
-      }
-      
-      
-      ###sampling from S, arbitrary number of samples
-      ##inverting realizations from a Unif(0,1) distribution. Using the previous sum-of-integrals formulation for G+,
-      #this requires a search across {G+(z1),⋯G+(zk−1)} and then inverting a single integral.
-      
-      x_star = function(samp.size = 1, support)
-      {
-        zfixed = zfix(support)
-        gp = uplus.cdf(zfixed, support)
-        zcdf = gp$cdf_normalised
-        normaliser = gp$normaliser
-        upper_bound = c(0, zcdf_not_normalised, 1)
-        
-        uniform_sample = runif(samp.size)
-        
-        fidx = findInterval(uniform_sample, upper_bound)
-        number_of_intervals = length(upper_bound) - 1
-        zlow = c(min, zfixed)
-        xstar = rep(NaN, length(uniform_sample)) ##1 for us
-        for(i in 1:number_of_intervals)
-        {
-          ui = uniform_sample[ fidx == i ]
-          
-          if(length(ui) == 0)
-          {
-            next
-          }
+#malvika
+
+
+min = -Inf
+
+max = Inf
+
+g <- function(x) dnorm(x)
+
+h <- function(x){
+  log(g(x))
+}
+
+## derivative of h
+dh = function(y)
+{
+  fderiv(h,y,1)
+}
+
+
+
+
+
+
+z <- function(support)
+{
+  x0 <- head(support, n=-1)
+  x1 <- tail(support, n=-1)
+  zed <- x0 + (h(x0) - h(x1) + (x1 - x0)*dh(x1)) / (dh(x1) - dh(x0))
+  return(zed)	
+}
+
+
+
+support <- c(-2,1,2)
+
+z(support)
+
+
+
+u_k = function(y, support) 
+{
+  u_plus = rep(0, length(y))
+  zed = z(support)
+  
+  piecewise.idx = findInterval(y, c(min, zed, max))
+  npieces = length(zed) + 2
+  for(pidx in 1:npieces){
+    yp = y[piecewise.idx == pidx]
+    xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
+    u_plus[piecewise.idx == pidx] = xx
+  }
+  return(u_plus)
+}
+
+
+##u_k is totally fine. 
+
+
+##now the sampling density
+
+y <- 2
+plus.cdf <- function(y, support) 
+   {
+       zed <- c(min, z(support), max)
+       p <- findInterval(y, zed)
+       l <- length(zed)
+      cdf_not_normalised <- numeric(l-1)
+       
+         for (i in 1:(l-1)){
+            cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
+           }
+          normaliser <- sum(cdf_not_normalised)
+         required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
          
-          ## Invert the gplus CDF
-          y_piece = support[i]
-          zm = zlow[i]
-          tmp = (ui - upper_bound[i]) * derivative(y_piece) * normaliser / exp(h(y_piece)) + exp( (zm - y_piece)*derivative(y_piece) )
-          tmp = y_piece + log(tmp) / derivative(y_piece)
-          res[ fidx == i ] = tmp
-        }
-        return(xstar)
-      }
-   
-      
-      
+          l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
+           return(l)
+       }
+  
+ 
+
+plus.cdf(1.5, support)
 
 
+
+
+## sample from the s_k density
+s_k_sample = function(support)
+{
+  zed = z(support)
+  sp = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
+  zpct = sp[1,]
+  norm.const = sp[2][[1]]
+  ub = unlist(c(0, zpct, 1))
   
+  unif.samp = runif(1)
   
+  fidx = findInterval(unif.samp, ub)
+  num.intervals = length(ub) - 1
+  zlow = c(min, zed)
+  res = rep(0, length(unif.samp))
+  for(i in 1:num.intervals)
+  {
+    ui = unif.samp[ fidx == i ]
+    
+    if(length(ui) == 0)
+    {
+      next
+    }
+    
+    ## Invert the  CDF
+    yp = support[i]
+    zm = zlow[i]
+    tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+    tmp = yp + log(tmp) / dh(yp)
+    res[ fidx == i ] = tmp
+  }
+  return(res)
+}
+
+s_k_sample(support)
+
   
-      
-      
-      
-      
-      
-      
