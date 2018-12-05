@@ -212,17 +212,19 @@ starting_x <- function(func_x, min_x, max_x){
 #calculate the functions u_k(X), s_k(x) and l_k(x)
     # These are just formula <- just function
    
- g_func <- function(f, x){
-    # docstring:
-    # f is the underlying density function
-    # x is where you want to evaluate
-    # after calculating the normalizing constant c  
-    # this function simply creates g as described in the paper
+g_func <- function(f, min, max, x){
+  # docstring:
+      # f is the underlying density function
+      # min and max are lower and upper bound, respectively
+      # x is where you want to evaluate
+      # after calculating the normalizing constant c  
+      # this function simply creates g as described in the paper
     
     c <- integrate(f, min, max)$value #normalizing constant
     g <- c * f(x)
     return(g)
   }
+
   
   h <- function(x) log(g_func(f, x))
   dh <- function(x) {fderiv(h, x, 1)} #h'(x)
@@ -340,19 +342,21 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
   
   check <- logconcav_check(f, seq(min, max, by = 0.1))
   if (!check) { print("The functino isn't log concave. Please input a log concave function")} else{
-  g_func <- function(f, x){
-    # docstring:
-    # f is the underlying density function
-    # x is where you want to evaluate
-    # after calculating the normalizing constant c  
-    # this function simply creates g as described in the paper
+ g_func <- function(f, min, max,x){
+  # docstring:
+      # f is the underlying density function
+      # left_b and right_b are lower and upper bound, respectively
+      # x is where you want to evaluate
+      # after calculating the normalizing constant c  
+      # this function simply creates g as described in the paper
     
     c <- integrate(f, min, max)$value #normalizing constant
     g <- c * f(x)
     return(g)
-  }  
-  h <- function(x) log(g_func(f, x))
-  dh <- function(x) {fderiv(h, x, 1)} #h'(x)
+  }
+
+  h <- function(x) log(g_func(f, min, max, x))
+  dh <- function(x) {fderiv(h, x, 1)} 
   sp <- sort(sp)
   sample <- numeric(n)
   
