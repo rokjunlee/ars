@@ -116,11 +116,13 @@ logconcav_check <- function(func, x){ #x is domain given
     # if all of the numerical values are negative, then this function
     # tells us that the func is log concavie. vice versa
   result <- numeric_sec_deri(f=logfunc(func), x = x)
+  l <- 0
   if (max(result) < 0) {     # if max is less than zero, then all are
-    return(TRUE)
+    l <- TRUE
   } else {                   # case one or more second derivative evaluation is positive
-    return(FALSE)
+    l <- FALSE
   }
+  return(l)
 }
 
 
@@ -210,15 +212,15 @@ starting_x <- function(func_x, min_x, max_x){
 #calculate the functions u_k(X), s_k(x) and l_k(x)
     # These are just formula <- just function
    
- g_func <- function(input_func, x){
+ g_func <- function(f, x){
     # docstring:
-    # input_func is the underlying density function
+    # f is the underlying density function
     # x is where you want to evaluate
     # after calculating the normalizing constant c  
     # this function simply creates g as described in the paper
     
-    c <- integrate(input_func, min, max)$value #normalizing constant
-    g <- c * input_func(x)
+    c <- integrate(f, min, max)$value #normalizing constant
+    g <- c * f(x)
     return(g)
   }
   
@@ -254,7 +256,7 @@ l_func <- function(x, sp) {
           
         }
         
-z <- function(support, h, dh)
+z <- function(support)
 {
   x0 <- head(support, n=-1)
   x1 <- tail(support, n=-1)
@@ -262,10 +264,10 @@ z <- function(support, h, dh)
   return(zed)	
 }
 
-u_k = function(y, support, h, dh) 
+u_k = function(y, support) 
 {
   u_plus = rep(0, length(y))
-  zed = z(support, h, dh)
+  zed = z(support)
   
   piecewise.idx = findInterval(y, c(min, zed, max))
   npieces = length(zed) + 2
@@ -277,9 +279,9 @@ u_k = function(y, support, h, dh)
   return(u_plus)
 }
 
-plus.cdf <- function(y, support,h ,dh) 
+plus.cdf <- function(y, support) 
    {
-       zed <- c(min, z(support, h, dh), max)
+       zed <- c(min, z(support), max)
        p <- findInterval(y, zed)
        l <- length(zed)
       cdf_not_normalised <- numeric(l-1)
@@ -294,9 +296,9 @@ plus.cdf <- function(y, support,h ,dh)
            return(l)
 }
 
-s_k_sample = function(support, h, dh)
+s_k_sample = function(support)
 {
-  zed = z(support, h, dh)
+  zed = z(support)
   sp = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
   zpct = sp[1,]
   norm.const = sp[2][[1]]
@@ -330,41 +332,6 @@ s_k_sample = function(support, h, dh)
 
 ```
 
-2. Sampling Step
-```{r}
-
-# Sample a value x* from s(X)
-
-
-
-# Sample a value w independently from the unif(O, 1)
-
-
-
-# Squeezing Test 
-
-
-
-# Also evaluate (?) h(x*) and h'(x*) <- not sure
-
-
-```
-
-3. Updating Step
-```{r}
-#If h(x*) and h'(x*) were evaluated at the sampling step, include x* in Tk to form T_(k+ 1)
-
-
-#relabel the elements of T_(k+1) in ascending order
-
-
-#construct the functions U_(k+1)(X), S_(k+1)(x) and I_(k+1)(x)
-
-
-# Return to the sampling step if n points have not yet been accepted
-
-
-```
 
 ```{r}
 ### basic function structure
@@ -373,15 +340,15 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
   
   check <- logconcav_check(f, seq(min, max, by = 0.1))
   if (!check) { print("The functino isn't log concave. Please input a log concave function")} else{
-  g_func <- function(input_func, x){
+  g_func <- function(f, x){
     # docstring:
-    # input_func is the underlying density function
+    # f is the underlying density function
     # x is where you want to evaluate
     # after calculating the normalizing constant c  
     # this function simply creates g as described in the paper
     
-    c <- integrate(input_func, min, max)$value #normalizing constant
-    g <- c * input_func(x)
+    c <- integrate(f, min, max)$value #normalizing constant
+    g <- c * f(x)
     return(g)
   }  
   h <- function(x) log(g_func(f, x))
@@ -396,7 +363,7 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
       while(!accept){
         
         u <- runif(1)
-        xstar <- s_k_sample(sp, h, dh)
+        xstar <- s_k_sample(sp)
         
         #squeezing and rejection tests
         if(u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { accept = 1 } 
