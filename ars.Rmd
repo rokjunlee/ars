@@ -134,7 +134,7 @@ logconcav_check <- function(func, x){ #x is domain given
 
     # need some ways to specify x_1 and x_k
     # better to find x_1 as small as possible as long as derivative is positive and density is positive
-starting_x <- function(func_x, min_x, max_x){
+starting_x <- function(func_x, min_x = -Inf, max_x = Inf){
   # docstring
     # divide into 4 cases
     # 1: both min and max are given
@@ -250,11 +250,13 @@ l_func <- function(x, sp) {
           # sp is the starting points
           # x is the sampled point
           index <- findInterval(x, c(min, sp, max))
+          l <- 0
           
           if (x <= sp[(length(sp))] & x >= sp[1]){
             l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
               l<- -Inf
             }
+          return(l)
           
         }
         
