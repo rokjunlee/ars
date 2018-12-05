@@ -293,6 +293,7 @@ test <- function(n, f, min, max, sp){
         
         
         u <- runif(1)
+        
         #assume sampled xstar from s(how?)
         support <- sp 
         u_k = function(y, support) 
