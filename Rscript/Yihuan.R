@@ -203,7 +203,7 @@ ars <- function(n, f, min, max, sp){
   
   
   ###test
-test <- function(n, f, min, max, sp, xstar){
+test <- function(n, f, min, max, sp){
   
   g_func <- function(input_func, x){
     # docstring:
@@ -294,6 +294,80 @@ test <- function(n, f, min, max, sp, xstar){
         
         u <- runif(1)
         #assume sampled xstar from s(how?)
+        support <- sp 
+        u_k = function(y, support) 
+        {
+          u_plus = rep(0, length(y))
+          zed = Z(support)
+          
+          piecewise.idx = findInterval(y, c(min, zed, max))
+          npieces = length(zed) + 2
+          for(pidx in 1:npieces){
+            yp = y[piecewise.idx == pidx]
+            xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
+            u_plus[piecewise.idx == pidx] = xx
+          }
+          return(u_plus)
+        }
+        
+        
+        ##now the sampling density
+
+        plus.cdf <- function(y, support) 
+        {
+          zed <- c(min, Z(support), max)
+          p <- findInterval(y, zed)
+          l <- length(zed)
+          cdf_not_normalised <- numeric(l-1)
+          
+          for (i in 1:(l-1)){
+            cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
+          }
+          normaliser <- sum(cdf_not_normalised)
+          required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
+          
+          l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
+          return(l)
+        }
+        
+        ## sample from the s_k density
+        s_k_sample = function(support)
+        {
+          zed = Z(support)
+          s_p = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
+          zpct = s_p[1,]
+          norm.const = s_p[2][[1]]
+          ub = unlist(c(0, zpct, 1))
+          
+          unif.samp = runif(1)
+          
+          fidx = findInterval(unif.samp, ub)
+          num.intervals = length(ub) - 1
+          zlow = c(min, zed)
+          res = rep(0, length(unif.samp))
+          for(i in 1:num.intervals)
+          {
+            ui = unif.samp[ fidx == i ]
+            
+            if(length(ui) == 0)
+            {
+              next
+            }
+            
+            ## Invert the  CDF
+            yp = s_p[i]
+            zm = zlow[i]
+            tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+            tmp = yp + log(tmp) / dh(yp)
+            res[ fidx == i ] = tmp
+          }
+          return(res)
+        }
+        
+        xstar <- s_k_sample(sp)
+        
+        
+        
         
         #squeezing and rejection tests
         if(u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { accept = 1 } 
@@ -306,4 +380,4 @@ test <- function(n, f, min, max, sp, xstar){
     }
     return(sample)
 }
-test(10, dnorm, -Inf, Inf, c(-2,2), 0.5)
+test(10, dnorm, -Inf, Inf, c(-2,2))
