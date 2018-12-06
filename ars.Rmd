@@ -235,7 +235,11 @@ g_func <- function(f, x){
           # the data sampled from Sk
           # sp is the starting points
           # x is the sampled point
-          z <- sort(z(sp))
+          z <- numeric(length(sp) + 1)
+          z[1] <- min
+          z[length(z)] <- max
+          z_middle <- sort(z(sp))
+          z[2:(length(z)-1)] <- z_middle
           index = findInterval(x, z)
           u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
           return(u)
@@ -371,11 +375,12 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
         xstar <- s_k_sample(sp)
         
         #squeezing and rejection tests
-        if(u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { accept = 1 } 
-           else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
+        if (u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { 
+          accept = 1 
+          } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
              accept = 1 
         #include xstar in sp
-        sp <- sort(c(sp, xstar))}
+             sp <- sort(c(sp, xstar))}
       }
       sample[i] = xstar
     }
