@@ -225,9 +225,8 @@ g_func <- function(f, x){
     return(g)
   }
 
-  
-  h <- function(x) log(g_func(f, x))
-  dh <- function(x) {fderiv(h, x, 1)} #h'(x)
+   h <- function(x) logfunc(g_func(x))
+  dh <- function(x) {fderiv(h, x, 1)} 
 
  u_func = function(x, sp) 
         {
@@ -236,7 +235,7 @@ g_func <- function(f, x){
           # the data sampled from Sk
           # sp is the starting points
           # x is the sampled point
-          z <- sort(Z(sp))
+          z <- sort(z(sp))
           index = findInterval(x, z)
           u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
           return(u)
@@ -357,7 +356,7 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
     return(g)
   }
 
-  h <- function(x) log(g_func(f, min, max, x))
+  h <- function(x) {log(g_func(f, x))}
   dh <- function(x) {fderiv(h, x, 1)} 
   sp <- sort(sp)
   sample <- numeric(n)
@@ -383,6 +382,7 @@ ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
     return(sample)
   }
 }
+ars(10, function(x) dnorm(x), -10, 10, c(-2,1) )
 ```
 
 
