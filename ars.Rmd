@@ -499,7 +499,7 @@ ars <- function(n, f, min, max, sp = NaN){
       return(sample)
     }
   }
-ars(10, f = function(x) dnorm(x), -10, 10, c(-2,2))
+  ars(10, f = function(x) dnorm(x), -10, 10, c(-2,2))
 
 ars(10, f = function(x) dnorm(x), -10, 10, c(-2,1) )
 ```
