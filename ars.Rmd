@@ -285,21 +285,46 @@ u_k = function(y, support)
   return(u_plus)
 }
 
-plus.cdf <- function(y, support) 
-   {
-       zed <- c(min, z(support), max)
-       p <- findInterval(y, zed)
-       l <- length(zed)
-      cdf_not_normalised <- numeric(l-1)
-       
-         for (i in 1:(l-1)){
-            cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
-           }
-          normaliser <- sum(cdf_not_normalised)
-         required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
-         
-          l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
-           return(l)
+plus.cdf <- plus.cdf <- function(vals, yfixed) 
+{
+ 
+  zfixed = z(yfixed)
+  
+  zlen = length(zfixed)
+  pct = numeric(length(vals))
+  norm.const = 0
+  for(zi in 0:zlen) {
+    if(zi == 0)
+    {
+      zm = -Inf
+    } else {
+      zm = zfixed[zi]
+    }
+    
+    if(zi == zlen)
+    {
+      zp = Inf
+    } else {
+      zp = zfixed[zi+1]
+    }
+    
+    yp = yfixed[zi+1]
+    ds = exp(h(yp))/dh(yp) * ( exp((zp - yp)*dh(yp)) - exp((zm - yp)*dh(yp)) )
+    
+    cidx = zm < vals & vals <= zp
+    hidx = vals > zp
+    
+    pct[cidx] = pct[cidx] + exp(h(yp))/dh(yp) * ( exp((vals[cidx] - yp)*dh(yp)) - exp((zm - yp)*dh(yp)) )
+    pct[hidx] = pct[hidx] + ds
+    
+    norm.const = norm.const + ds
+  }
+  
+  l = list( 
+    pct = pct / norm.const, 
+    norm.const = norm.const
+  )
+  return(l)
 }
 
 s_k_sample = function(support)
