@@ -203,182 +203,272 @@ ars <- function(n, f, min, max, sp){
   
   
   ###test
-test <- function(n, f, min, max, sp){
+  #check logconcave
   
-  g_func <- function(input_func, x){
-    # docstring:
-    # input_func is the underlying density function
-    # x is where you want to evaluate
-    # after calculating the normalizing constant c  
-    # this function simply creates g as described in the paper
-    
-    c <- integrate(input_func, min, max)$value #normalizing constant
-    g <- c * input_func(x)
-    return(g)
+  logconcav_check <- function(func, x){ #x is domain given
+    # docstring
+    # This function finds out numerical value of the second derivative
+    # at x of the func 
+    # if all of the numerical values are negative, then this function
+    # tells us that the func is log concavie. vice versa
+    result <- numeric_sec_deri(f=logfunc(func), x = x)
+    l <- 0
+    if (max(result) < 0) {     # if max is less than zero, then all are
+      l <- TRUE
+    } else {                   # case one or more second derivative evaluation is positive
+      l <- FALSE
+    }
+    return(l)
   }
   
-  h <- function(x) log(g_func(f, x))
-  dh <- function(x) {fderiv(h, x, 1)} #h'(x)
   
-  sp <- sort(sp)
-  sample <- numeric(n)
+  # D denotes the domain of f(x)
+  # Choose k starting abscissae
+  # From pg 342: "In general we have found two starting abscissae (k = 2) to be necessary and sufficient for computational efficiency."
   
-    for( i in 1:n){
   
-      accept = 0
+  
+  # need some ways to specify x_1 and x_k
+  # better to find x_1 as small as possible as long as derivative is positive and density is positive
+  starting_x <- function(func_x, min_x = -Inf, max_x = Inf){
+    # docstring
+    # divide into 4 cases
+    # 1: both min and max are given
+    # 2: when max is finite but min is missing or infinite
+    # 3: when min is finite but max is missing or infinite
+    # 4: otherwise
+    
+    # func_x is the underlying function
+    # min_x and max_x are min and max of f's domain
+    
+    
+    # First case
+    if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
       
-      while(!accept){
-        
-        #find vector of z
-        Z <- function(sp){
-          # docstring
-          # Tries to locate z_j's which are points where upper tangent segments
-          # intersect with each other, with z0 set as min and zk set as max
-          # sp are the starting points
-          
-          z <- numeric(length(sp) + 1)
-          z[1] <- min
-          z[length(z)] <- max
-          
-          h_e <- h(sp)              # evaluate original function at x
-          h_e_1 <- h_e[-1]           # discard first element
-          h_e_k <- h_e[-length(sp)]          # discard last element 
-          
-          hprime_e <- dh(sp)      # evaluate first derivative function at x
-          hprime_e_1 <- hprime_e[-1] # discard first element 
-          hprime_e_k <- hprime_e[-length(sp)] # discard last element 
-          
-          sp_1 <- sp[-1]               # discard first element 
-          sp_k <- sp[-length(sp)]               # discard last element
-          
-          numerator <- h_e_1 - h_e_k - sp_1 * hprime_e_1 + sp_k * hprime_e_k
-          denominator <- hprime_e_k - hprime_e_1
-          
-          z[2:(length(z)-1)] <- numerator/denominator    # formula for z
-          
-          
-          return(z)
+      return(c(min_x, max_x))  # simplest case: just return min and max values
+      
+      # Second case  
+    } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
+                && is.finite(max_x) == TRUE ) { # max is finite
+      
+      if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
+        min_x <- -.Machine$integer.max # if derivative is positive then just use -.Machine$integer.max
+      } else { # otherwise slowly increase min_x until it becomes positive
+        min_x <- -1000  
+        while (numeric_first_d(function(x) func_x(x), min_x) <= 0) { 
+          print(numeric_first_d(function(x) func_x(x), min_x))
+          min_x <- min_x + 5
         }
-        
-        
-        u_func = function(x, sp) 
-        {
-          # docstring
-          # function calculates the upper hull piece corresponding to 
-          # the data sampled from Sk
-          # sp is the starting points
-          # x is the sampled point
-          z <- sort(Z(sp))
-          index = findInterval(x, z)
-          u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
-          return(u)
-        }
-        
-        
-        l_func <- function(x, sp) {
-          # docstring
-          # function calculates the lower hull piece corresponding to 
-          # the data sampled from Sk, set to -inf if x<x1 or x>xk
-          # sp is the starting points
-          # x is the sampled point
-          index <- findInterval(x, c(min, sp, max))
-          
-          if (x <= sp[(length(sp))] & x >= sp[1]){
-            l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
-              l<- -Inf
-            }
-          
-        }
-        
-        
-        
-        u <- runif(1)
-        
-        #assume sampled xstar from s(how?)
-        support <- sp 
-        u_k = function(y, support) 
-        {
-          u_plus = rep(0, length(y))
-          zed = Z(support)
-          
-          piecewise.idx = findInterval(y, c(min, zed, max))
-          npieces = length(zed) + 2
-          for(pidx in 1:npieces){
-            yp = y[piecewise.idx == pidx]
-            xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
-            u_plus[piecewise.idx == pidx] = xx
-          }
-          return(u_plus)
-        }
-        
-        
-        ##now the sampling density
-
-        plus.cdf <- function(y, support) 
-        {
-          zed <- c(min, Z(support), max)
-          p <- findInterval(y, zed)
-          l <- length(zed)
-          cdf_not_normalised <- numeric(l-1)
-          
-          for (i in 1:(l-1)){
-            cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
-          }
-          normaliser <- sum(cdf_not_normalised)
-          required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
-          
-          l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
-          return(l)
-        }
-        
-        ## sample from the s_k density
-        s_k_sample = function(support)
-        {
-          zed = Z(support)
-          s_p = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
-          zpct = s_p[1,]
-          norm.const = s_p[2][[1]]
-          ub = unlist(c(0, zpct, 1))
-          
-          unif.samp = runif(1)
-          
-          fidx = findInterval(unif.samp, ub)
-          num.intervals = length(ub) - 1
-          zlow = c(min, zed)
-          res = rep(0, length(unif.samp))
-          for(i in 1:num.intervals)
-          {
-            ui = unif.samp[ fidx == i ]
-            
-            if(length(ui) == 0)
-            {
-              next
-            }
-            
-            ## Invert the  CDF
-            yp = s_p[i]
-            zm = zlow[i]
-            tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-            tmp = yp + log(tmp) / dh(yp)
-            res[ fidx == i ] = tmp
-          }
-          return(res)
-        }
-        
-        xstar <- s_k_sample(sp)
-        
-        
-        
-        
-        #squeezing and rejection tests
-        if(u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { accept = 1 } 
-           else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
-             accept = 1 
-        #include xstar in sp
-        sp <- sort(c(sp, xstar))}
       }
-      sample[i] = xstar
+      return(c(min_x, max_x))
+      
+      
+      # Third case
+    } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
+                && is.finite(min_x)==TRUE ) {  # min is finite
+      
+      if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
+        max_x <- .Machine$integer.max # if derivative is negative then just use .Machine$integer.max
+      } else {  # otherwise slowly decrease max_x until it becomes negative
+        max_x <- 1000
+        while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
+          print(numeric_first_d(function(x) func_x(x), max_x))
+          max_x <- max_x - 5
+        }
+      }
+      return(c(min_x, max_x))
+      
+      # Fourth case
+    } else {  # both min and max are infinite or both missing
+      
+      if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
+        min_x <- -.Machine$integer.max
+      } else {
+        min_x <- -1000
+        while (numeric_first_d(function(x) func_x(x), min_x) <= 0) {
+          print(numeric_first_d(function(x) func_x(x), min_x))
+          min_x <- min_x + 5
+        }
+      }
+      
+      if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
+        max_x <- .Machine$integer.max
+      } else {
+        max_x <- 1000
+        while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
+          print(numeric_first_d(function(x) func_x(x), max_x))
+          max_x <- max_x - 5
+        }
+      }
+      return(c(min_x, max_x))   
+      
     }
-    return(sample)
-}
-test(10, dnorm, -Inf, Inf, c(-2,2))
+  }
+  
+  #calculate the functions u_k(X), s_k(x) and l_k(x)
+  # These are just formula <- just function
+ 
+
+  ### basic function structure
+  ars <- function(n, f, min, max, sp = NaN){
+    
+    if (n <= 0 || !is.numeric(n)) 
+      stop("Please enter positive integers for sample size.")
+    if (min >= max || !is.numeric(min) || !is.numeric(max) ) 
+      stop("Please input valid domain.")
+    check <- logconcav_check(f, seq(min, max, by = 0.1))
+    if (!check) { print("The function isn't log concave. Please input a log concave function")} else{
+      if(sum(is.finite(sp)) < 2) {sp = starting_x(f, min, max)}
+      sp <- sort(sp)
+      sample <- numeric(n)
+      g_func <- function(f, x){
+        # docstring:
+        # f is the underlying density function
+        # left_b and right_b are lower and upper bound, respectively
+        # x is where you want to evaluate
+        # after calculating the normalizing constant c  
+        # this function simply creates g as described in the paper
+        
+        c <- integrate(f, min, max)$value #normalizing constant
+        g <- f(x) / c
+        return(g)
+      }
+      
+      h <- function(x) {log(g_func(f,x))}
+      dh <- function(x) {fderiv(h, x, 1)} 
+      
+      u_func = function(x, sp) 
+      {
+        # docstring
+        # function calculates the upper hull piece corresponding to 
+        # the data sampled from Sk
+        # sp is the starting points
+        # x is the sampled point
+        z <- numeric(length(sp) + 1)
+        z[1] <- min
+        z[length(z)] <- max
+        z_middle <- sort(z(sp))
+        z[2:(length(z)-1)] <- z_middle
+        index = findInterval(x, z)
+        u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
+        return(u)
+      }
+      
+      
+      l_func <- function(x, sp) {
+        # docstring
+        # function calculates the lower hull piece corresponding to 
+        # the data sampled from Sk, set to -inf if x<x1 or x>xk
+        # sp is the starting points
+        # x is the sampled point
+        index <- findInterval(x, c(min, sp, max))
+        l <- 0
+        
+        if (x <= sp[(length(sp))] & x >= sp[1]){
+          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+            l<- -Inf
+          }
+        return(l)
+        
+      }
+      
+      z <- function(support)
+      {
+        x0 <- head(support, n=-1)
+        x1 <- tail(support, n=-1)
+        zed <- x0 + (h(x0) - h(x1) + (x1 - x0)*dh(x1)) / (dh(x1) - dh(x0))
+        return(zed)	
+      }
+      
+      u_k = function(y, support) 
+      {
+        u_plus = rep(0, length(y))
+        zed = z(support)
+        
+        piecewise.idx = findInterval(y, c(min, zed, max))
+        npieces = length(zed) + 2
+        for(pidx in 1:npieces){
+          yp = y[piecewise.idx == pidx]
+          xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
+          u_plus[piecewise.idx == pidx] = xx
+        }
+        return(u_plus)
+      }
+      
+      plus.cdf <- function(y, support) 
+      {
+        zed <- c(min, z(support), max)
+        p <- findInterval(y, zed)
+        l <- length(zed)
+        cdf_not_normalised <- numeric(l-1)
+        
+        for (i in 1:(l-1)){
+          cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
+        }
+        normaliser <- sum(cdf_not_normalised)
+        required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
+        
+        l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
+        return(l)
+      }
+      
+      s_k_sample = function(support)
+      {
+        zed = z(support)
+        sp = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
+        zpct = sp[1,]
+        norm.const = sp[2][[1]]
+        ub = unlist(c(0, zpct, 1))
+        
+        unif.samp = runif(1)
+        
+        fidx = findInterval(unif.samp, ub)
+        num.intervals = length(ub) - 1
+        zlow = c(min, zed)
+        res = rep(0, length(unif.samp))
+        for(i in 1:num.intervals)
+        {
+          ui = unif.samp[ fidx == i ]
+          
+          if(length(ui) == 0)
+          {
+            next
+          }
+          
+          ## Invert the  CDF
+          yp = support[i]
+          zm = zlow[i]
+          tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+          tmp = yp + log(tmp) / dh(yp)
+          res[ fidx == i ] = tmp
+        }
+        return(res)
+      }
+      
+      
+      for( i in 1:n){
+        
+        accept = 0
+        
+        while(!accept){
+          
+          u <- runif(1)
+          xstar <- s_k_sample(sp)
+          
+          #squeezing and rejection tests
+          if (u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { 
+            accept = 1 
+          } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
+            accept = 1 
+            #include xstar in sp
+            sp <- sort(c(sp, xstar))}
+        }
+        sample[i] = xstar
+      }
+      return(sample)
+    }
+  }
+  ars(10, f = function(x) dnorm(x), -10, 10, c(-2,2))
+
+  
+  

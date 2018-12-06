@@ -211,21 +211,20 @@ starting_x <- function(func_x, min_x = -Inf, max_x = Inf){
 
 #calculate the functions u_k(X), s_k(x) and l_k(x)
     # These are just formula <- just function
-   
-g_func <- function(f, x){
+ g_func <- function(f, x){
   # docstring:
       # f is the underlying density function
-      # min and max are lower and upper bound, respectively
+      # left_b and right_b are lower and upper bound, respectively
       # x is where you want to evaluate
       # after calculating the normalizing constant c  
       # this function simply creates g as described in the paper
     
     c <- integrate(f, min, max)$value #normalizing constant
-    g <- c * f(x)
+    g <- f(x) / c
     return(g)
   }
 
-   h <- function(x) logfunc(g_func(x))
+  h <- function(x) {log(g_func(f, x))}
   dh <- function(x) {fderiv(h, x, 1)} 
 
  u_func = function(x, sp) 
@@ -342,52 +341,167 @@ s_k_sample = function(support)
 
 ```{r}
 ### basic function structure
-ars <- function(n, f, min, max, sp = starting_x(f, min, max)){
-  
-  
-  check <- logconcav_check(f, seq(min, max, by = 0.1))
-  if (!check) { print("The functino isn't log concave. Please input a log concave function")} else{
- g_func <- function(f, x){
-  # docstring:
-      # f is the underlying density function
-      # left_b and right_b are lower and upper bound, respectively
-      # x is where you want to evaluate
-      # after calculating the normalizing constant c  
-      # this function simply creates g as described in the paper
+ars <- function(n, f, min, max, sp = NaN){
     
-    c <- integrate(f, min, max)$value #normalizing constant
-    g <- f(x) / c
-    return(g)
-  }
-
-  h <- function(x) {log(g_func(f, x))}
-  dh <- function(x) {fderiv(h, x, 1)} 
-  sp <- sort(sp)
-  sample <- numeric(n)
-  
-    for( i in 1:n){
-  
-      accept = 0
-      
-      while(!accept){
+    if (n <= 0 || !is.numeric(n)) 
+      stop("Please enter positive integers for sample size.")
+    if (min >= max || !is.numeric(min) || !is.numeric(max) ) 
+      stop("Please input valid domain.")
+    check <- logconcav_check(f, seq(min, max, by = 0.1))
+    if (!check) { print("The function isn't log concave. Please input a log concave function")} else{
+      if(sum(is.finite(sp)) < 2) {sp = starting_x(f, min, max)}
+      sp <- sort(sp)
+      sample <- numeric(n)
+      g_func <- function(f, x){
+        # docstring:
+        # f is the underlying density function
+        # left_b and right_b are lower and upper bound, respectively
+        # x is where you want to evaluate
+        # after calculating the normalizing constant c  
+        # this function simply creates g as described in the paper
         
-        u <- runif(1)
-        xstar <- s_k_sample(sp)
-        
-        #squeezing and rejection tests
-        if (u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { 
-          accept = 1 
-          } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
-             accept = 1 
-        #include xstar in sp
-             sp <- sort(c(sp, xstar))}
+        c <- integrate(f, min, max)$value #normalizing constant
+        g <- f(x) / c
+        return(g)
       }
-      sample[i] = xstar
+      
+      h <- function(x) {log(g_func(f,x))}
+      dh <- function(x) {fderiv(h, x, 1)} 
+      
+      u_func = function(x, sp) 
+      {
+        # docstring
+        # function calculates the upper hull piece corresponding to 
+        # the data sampled from Sk
+        # sp is the starting points
+        # x is the sampled point
+        z <- numeric(length(sp) + 1)
+        z[1] <- min
+        z[length(z)] <- max
+        z_middle <- sort(z(sp))
+        z[2:(length(z)-1)] <- z_middle
+        index = findInterval(x, z)
+        u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
+        return(u)
+      }
+      
+      
+      l_func <- function(x, sp) {
+        # docstring
+        # function calculates the lower hull piece corresponding to 
+        # the data sampled from Sk, set to -inf if x<x1 or x>xk
+        # sp is the starting points
+        # x is the sampled point
+        index <- findInterval(x, c(min, sp, max))
+        l <- 0
+        
+        if (x <= sp[(length(sp))] & x >= sp[1]){
+          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+            l<- -Inf
+          }
+        return(l)
+        
+      }
+      
+      z <- function(support)
+      {
+        x0 <- head(support, n=-1)
+        x1 <- tail(support, n=-1)
+        zed <- x0 + (h(x0) - h(x1) + (x1 - x0)*dh(x1)) / (dh(x1) - dh(x0))
+        return(zed)	
+      }
+      
+      u_k = function(y, support) 
+      {
+        u_plus = rep(0, length(y))
+        zed = z(support)
+        
+        piecewise.idx = findInterval(y, c(min, zed, max))
+        npieces = length(zed) + 2
+        for(pidx in 1:npieces){
+          yp = y[piecewise.idx == pidx]
+          xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
+          u_plus[piecewise.idx == pidx] = xx
+        }
+        return(u_plus)
+      }
+      
+      plus.cdf <- function(y, support) 
+      {
+        zed <- c(min, z(support), max)
+        p <- findInterval(y, zed)
+        l <- length(zed)
+        cdf_not_normalised <- numeric(l-1)
+        
+        for (i in 1:(l-1)){
+          cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
+        }
+        normaliser <- sum(cdf_not_normalised)
+        required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
+        
+        l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
+        return(l)
+      }
+      
+      s_k_sample = function(support)
+      {
+        zed = z(support)
+        sp = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
+        zpct = sp[1,]
+        norm.const = sp[2][[1]]
+        ub = unlist(c(0, zpct, 1))
+        
+        unif.samp = runif(1)
+        
+        fidx = findInterval(unif.samp, ub)
+        num.intervals = length(ub) - 1
+        zlow = c(min, zed)
+        res = rep(0, length(unif.samp))
+        for(i in 1:num.intervals)
+        {
+          ui = unif.samp[ fidx == i ]
+          
+          if(length(ui) == 0)
+          {
+            next
+          }
+          
+          ## Invert the  CDF
+          yp = support[i]
+          zm = zlow[i]
+          tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+          tmp = yp + log(tmp) / dh(yp)
+          res[ fidx == i ] = tmp
+        }
+        return(res)
+      }
+      
+      
+      for( i in 1:n){
+        
+        accept = 0
+        
+        while(!accept){
+          
+          u <- runif(1)
+          xstar <- s_k_sample(sp)
+          
+          #squeezing and rejection tests
+          if (u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { 
+            accept = 1 
+          } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
+            accept = 1 
+            #include xstar in sp
+            sp <- sort(c(sp, xstar))}
+        }
+        sample[i] = xstar
+      }
+      return(sample)
     }
-    return(sample)
   }
-}
-ars(10, function(x) dnorm(x), -10, 10, c(-2,1) )
+ars(10, f = function(x) dnorm(x), -10, 10, c(-2,2))
+
+ars(10, f = function(x) dnorm(x), -10, 10, c(-2,1) )
 ```
 
 
