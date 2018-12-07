@@ -94,14 +94,16 @@ numeric_sec_deri <- function(f, x){
     # f is the underlying function
     # x is where we want to evaluate
     # below we are taking limit as h goes to 0
-  h <- .Machine$double.eps^(1/4)
+  h <- .Machine$double.eps^0.25
+  #h <- 0.000001
   numerator <- f(x+h) - 2*f(x) + f(x-h)
   denominator <- h^2
   val <- numerator / denominator
   return(val)
 }
 
-
+numeric_sec_deri(logfunc(function(x) dnorm(x)), 50)
+numeric_sec_deri(logfunc(function(x) dnorm(x)), 38)
 ```
 
 
@@ -348,7 +350,8 @@ ars <- function(n, f, min, max, sp = NaN){
     if (min >= max || !is.numeric(min) || !is.numeric(max) ) 
       stop("Please input valid domain.")
     check <- logconcav_check(f, seq(min, max, by = 0.1))
-    if (!check) { print("The function isn't log concave. Please input a log concave function")} else{
+    if (!check) { print("The function isn't log concave. Please input a log concave function")} 
+    else {
       if(sum(is.finite(sp)) < 2) {sp = starting_x(f, min, max)}
       sp <- sort(sp)
       sample <- numeric(n)
@@ -396,11 +399,12 @@ ars <- function(n, f, min, max, sp = NaN){
         l <- 0
         
         if (x <= sp[(length(sp))] & x >= sp[1]){
-          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
+          l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / 
+            (sp[index] -sp[index - 1])} 
+        else{
             l<- -Inf
           }
         return(l)
-        
       }
       
       z <- function(support)
@@ -438,7 +442,6 @@ ars <- function(n, f, min, max, sp = NaN){
         }
         normaliser <- sum(cdf_not_normalised)
         required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
-        
         l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
         return(l)
       }
@@ -499,9 +502,18 @@ ars <- function(n, f, min, max, sp = NaN){
       return(sample)
     }
   }
-  ars(10, f = function(x) dnorm(x), -10, 10, c(-2,2))
 
-ars(10, f = function(x) dnorm(x), -10, 10, c(-2,1) )
+
+#Checking
+ars(10, f = function(x) dnorm(x), -10, 10, c(-2, 2))
+ars(10, f = function(x) dnorm(x), -10, 10, c(-2, 1))
+ars(10, f = function(x) dnorm(x), -10, 10, c(-8, 2))
+ars(20, f = function(x) dnorm(x), -10, 10, c(-1, 1))
+ars(20, f = function(x) dnorm(x), -20, 30, c(-19, 1))
+ars(20, f = function(x) dnorm(x, 25, 3), -5, 45, c(-3, 37))
+
+# non log concave function input
+ars(20, f = function(x) x^2, -10, 10, c(-8, 2)) # gives us the correct error
 ```
 
 
