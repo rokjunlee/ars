@@ -2,7 +2,11 @@
 title: "ARS Explanation"
 author: "Malvika Rajeev, Yihuan Song, RJ Lee"
 date: "12/2/2018"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: console
 ---
 
 ### Github account for the final version of the project
@@ -13,10 +17,18 @@ Github user name: rokjunlee
 The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work.
 
 
+The very first main task that our `ars()` needs to be able to accomplish is to determine if the input function is logarithmically concave or not. The function should not move on to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
+
+\begin{align*}
+  f''(x) = lim_{h \rightarrow 0} \frac{f(x+h)-2f(x)+f(x+h)}{h^{2}}
+\end{align*}
+, which is also known as the second symmetric derivative [https://en.wikipedia.org/wiki/Second_derivative]. 
+
+After second derivatives were evaluated at several points in the domain, the sign of the largest evaluated value was checked. If the sign is negative, then we accept that the input function is logarithmically concave since all the other evaluated values must also be negative. Otherwise, we stop the function from moving on to the next task.
 
 
 
-### Specific Contributoins of each team member 
+### Specific Contributions of each team member 
 
 ####Malvika Rajeev
 vectorizing computation of Zjs, 
@@ -32,9 +44,9 @@ The squeezing and rejection tests
 ####RJ Lee
 Function that checks log concavity
     Need to evaluate second derivative numerically
-Function that can joing tangent segments
+Function that can join tangent segments
     Finding tangent lines
     Simple linear models to find endpoints of each tangent lines
-
+Starting point
 
 
