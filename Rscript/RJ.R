@@ -191,9 +191,11 @@ logconcav_check <- function(func, x){
     # tells us that the func is log concavie. vice versa
   result <- numeric_sec_deri(f=logfunc(func), x = x)
   if (max(result) < 0) {     # if max is less than zero, then all are
-    cat("The Input Function is Log-Concave")    
+    #cat("The Input Function is Log-Concave")    
+    return(TRUE)
   } else {                   # case one or more second derivative evaluation is positive
-    cat("The Input Function is NOT Log-Concave.")
+    #cat("The Input Function is NOT Log-Concave.")
+    return(FALSE)
   }
   #return(result)
 }
@@ -534,6 +536,8 @@ starting_x(function(x) dnorm(x), min_x= -Inf, max_x=Inf)
 starting_x(function(x) dnorm(x), min_x= NA, max_x=2)
 starting_x(function(x) dnorm(x), min_x= -1, max_x=NA)
 starting_x(function(x) dnorm(x), min_x= NA, max_x=NA)
+
+
 
 
 #-----------------------------------------------------------

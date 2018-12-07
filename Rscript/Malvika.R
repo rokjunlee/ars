@@ -70,7 +70,7 @@ plus.cdf <- function(y, support)
          for (i in 1:(l-1)){
             cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
            }
-          normaliser <- sum(cdf_not_normalised)
+         normaliser <- sum(cdf_not_normalised)
          required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
          
           l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)

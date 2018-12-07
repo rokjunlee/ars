@@ -4,20 +4,32 @@ library(testthat)
 source("Rscript/RJ.R")
 
 
-test_that("standardize works with normal input", {
-  x <- c(1, 2, 3)
-  z <- (x - mean(x)) / sd(x)
+
+# numeric_sec_deri
+test_that("function that numerically evaluates second derivative", { 
   
-  expect_equal(standardize(x), z)
-  expect_length(standardize(x), length(x))
-  expect_type(standardize(x), 'double')
+  # tests
+    # expect result to be double
+    expect_type(numeric_sec_deri(function(x) x^2, -14), 'double')
+    
+    # second derivative of x^2 is just 2
+    expect_equal(numeric_sec_deri(function(x) x^2, -14), 2)
 })
 
 
-test_that("evaluate second derivative", { 
-  x <- seq(-2, 3)
+# logconcav_check
+test_that("log concavity check for input function", {
   
-  expect_equal(numeric_sec_deri(function(x) x^2, 2), 2)
-  expect_equal(numeric_sec_deri(function(x) dnorm(x), 2), 2)
+  #tests
+    # log-dnorm is log-concave
+    expect_true( logconcav_check(function(x) dnorm(x), c(1,2,3)) )  
+    # log debeta is NOT log-concave
+    expect_false( logconcav_check( function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), c(0.1, 0.2)) )
 })
+
+
+
+
+
+
 
