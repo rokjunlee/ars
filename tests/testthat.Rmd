@@ -1,0 +1,14 @@
+---
+title: "testthat"
+author: "Malvika Rajeev, Yihuan Song, RJ Lee"
+date: "12/7/2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+devtools::use_testthat()
+```
+
+

@@ -14,7 +14,8 @@ Final version of the project resides in RJ's Github account.
 Github user name: rokjunlee
 
 
-The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work.
+
+<!-- The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work. -->
 
 
 The very first main task that our `ars()` needs to be able to accomplish is to determine if the input function is logarithmically concave or not. The function should not move on to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
@@ -28,26 +29,32 @@ After second derivatives were evaluated at several points in the domain, the sig
 
 Next step is to transform the input function $f$ into $g$ which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
+
+
+
 ### Specific Contributions of each team member 
 
-####Malvika Rajeev
+Although we divided the task as below we all contributed to all the tasks to some extent by checking for errors and making codes faster/better.
+
+#### Malvika Rajeev
 vectorizing computation of Zjs, 
 computing the upper linear hull, 
 computing the cdf, 
 sampling from the exponential density.
-####Yihuan Song
+
+#### Yihuan Song
 The basic structure of the ars function (for loop and while loop)
 The functions of h(x), h'(x), uk(x), lk(x), sk(x), and finding zj's
 The squeezing and rejection tests
 
 
-####RJ Lee
-Function that checks log concavity
-    Need to evaluate second derivative numerically
+#### RJ Lee
+Function that checks for log-concavity of the input function
+    by evaluating second derivative numerically
 Function that can join tangent segments
     Finding tangent lines
     Simple linear models to find endpoints of each tangent lines
-Starting point
-g_func
+Function that chooses the starting point: X_1 and X_k (k=2)
+g_func that transforms f into g as described in the paper.
 
 
