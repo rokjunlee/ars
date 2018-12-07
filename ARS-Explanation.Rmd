@@ -26,7 +26,7 @@ The very first main task that our `ars()` needs to be able to accomplish is to d
 
 After second derivatives were evaluated at several points in the domain, the sign of the largest evaluated value was checked. If the sign is negative, then we accept that the input function is logarithmically concave since all the other evaluated values must also be negative. Otherwise, we stop the function from moving on to the next task.
 
-
+Next step is to transform the input function $f$ into $g$ which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
 ### Specific Contributions of each team member 
 
@@ -48,5 +48,6 @@ Function that can join tangent segments
     Finding tangent lines
     Simple linear models to find endpoints of each tangent lines
 Starting point
+g_func
 
 
