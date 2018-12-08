@@ -114,6 +114,7 @@ logconcav_check <- function(sp){ #x is starting points given
   # at x of the function 
   # if all of the numerical values are negative, then this function
   # tells us that the func is log concave. vice versa
+  p[length(sp)] <- sp[length(sp)] - 1
   x_1 <- sp[-1]
   x_0 <- sp[-length(sp)]
   result <- dh(x_1) - dh(x_0)
@@ -294,7 +295,7 @@ plus.cdf = function(x, sp)
   
   zlen = length(zed) ##NUMBER OF CDF POINTS
   s_k_cdf = numeric(length(x))
-  norm.const = 0
+  normaliser = 0
   for(i in 0:zlen) {
     if(i == 0)
     {
