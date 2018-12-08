@@ -370,7 +370,7 @@ plus.cdf = function(x, sp)
 
 ```{r}
 ### basic function structure
-ars <- function(n, f, min, max, sp = NaN){
+ars <- function(n, f, min, max, sp = c(-Inf, Inf)){
     
     
     
@@ -395,7 +395,7 @@ ars <- function(n, f, min, max, sp = NaN){
       h <- function(x) {log(g_func(f,x))}
       dh <- function(x) {fderiv(h, x, 1)}   
 
-      if(sum(is.finite(sp)) < 2) {sp = starting_x(f, min, max)}
+      if(sum(is.finite(sp)) < length(sp)) {sp = starting_x(f, min, max)}
       if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
       sp <- sort(sp)
       sample <- numeric(n)
@@ -466,7 +466,7 @@ plus.cdf = function(x, sp)
   
   zlen = length(zed) ##NUMBER OF CDF POINTS
   s_k_cdf = numeric(length(x))
-  norm.const = 0
+  normaliser = 0
   for(i in 0:zlen) {
     if(i == 0)
     {
@@ -533,12 +533,36 @@ plus.cdf = function(x, sp)
         res[ fidx == i ] = tmp
       }
       return(res)
-    }
+ }
+ #check logconcave
+
+logconcav_check <- function(sp){ #x is starting points given
+  # docstring
+  # This function finds out numerical value of the second derivative
+  # at x of the function 
+  # if all of the numerical values are negative, then this function
+  # tells us that the func is log concave. vice versa
+  sp[length(sp)] <- sp[length(sp)] - 1
+  x_1 <- sp[-1]
+  x_0 <- sp[-length(sp)]
+  result <- dh(x_1) - dh(x_0)
+  result[which(is.nan(result))] = -Inf
+  l <- 0
+  if (max(result) <= 0) {     # if max is less than zero, then all are
+    l <- TRUE
+  } else {                   # case one or more second derivative evaluation is positive
+    l <- FALSE
+  }
+  return(l)
+}
+
+
+##begin sampling
       
       for( i in 1:n){
         
         accept = 0
-        
+        check = 0
         while(!accept){
           
           u <- runif(1)
@@ -563,22 +587,35 @@ plus.cdf = function(x, sp)
 
 
 # Checking
-ars(10, f = function(x) dnorm(x), -10, 10, c(-2, 2))
+
 ars(10, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
 
 
 ars(10, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
-ars(10, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2))
-ars(20, f = function(x) dnorm(x), -10, 10, c(-1, 1))
+ars(10, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2)) #slow
 ars(20, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))
-ars(20, f = function(x) dnorm(x), -20, 30, c(-19, 1))
+#ars(20, f = function(x) dnorm(x), -20, 30, c(-19, 1)) #slow
+ars(20, f = function(x) dgamma(x,5), 0, 10, c(2,5))
+ars(20, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
 
-ars(20, f = function(x) dnorm(x), -20, 30)
 # not working 
-#ars(20, f = function(x) dnorm(x, 25, 3), -5, 45, c(-3, 37))
+#ars(20, f = function(x) x^2, -100, 100, c(-2,10)) #xstar is NaN in this case
 
 # non log concave function input
-ars(20, f = function(x) x^2, -10, 10, c(-8, 2)) # gives us the correct error
+ars(20, f = function(x) dt(x,3), -100, 100, c(-2,10)) # gives us the correct error
+
+#user not give or give inf as sp
+ars(10, f = function(x) dnorm(x), -10, 10, c(-Inf, Inf)) #infinite loop, xstar never accepted
+#> f<-function(x) dnorm(x)
+#> starting_x(f)
+#[1] -35  35
+#but in this case, (sum(is.finite(sp)) < length(sp)) { sp = starting_x(f, min, max)}) gives starting points of (-10,10)
+
+
+#timing
+system.time(ars(1000, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3)))
+ #  user  system elapsed 
+ # 6.803   0.101   6.906 
 ```
 
 
