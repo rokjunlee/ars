@@ -46,6 +46,8 @@ sampling from the exponential density.
 The basic structure of the ars function (for loop and while loop)
 The functions of h(x), h'(x), uk(x), lk(x), sk(x), and finding zj's
 The squeezing and rejection tests
+Input validation: Check if the input is reasonable
+check the log-concavity for starting points
 
 
 #### RJ Lee

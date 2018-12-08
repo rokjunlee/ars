@@ -43,7 +43,7 @@ b) u_k and then l_k functions
       
 c) sample x* from the s_k(x) ; and then w from unif(0, 1)
 
-d) updating step; update T_k as, and then arrange by order; reconstruct u, k, s
+d) updating step; update T_k as, and then arx by order; reconstruct u, k, s
   squeeze test
 
 
@@ -108,20 +108,16 @@ numeric_sec_deri(logfunc(function(x) dnorm(x)), 38)
 ```{r}
 #check logconcave
 
-logconcav_check <- function(x){ #x is domain given
+logconcav_check <- function(sp){ #x is starting points given
   # docstring
-    # This function finds out numerical value of the second derivative
-    # at x of the func 
-    # if all of the numerical values are negative, then this function
-    # tells us that the func is log concave. vice versa
-  if(x[1] == -Inf) {x[1] = -.Machine$integer.max}
-  if(x[length(x)] == Inf) {x[length(x)] = .Machine$integer.max}
-  x[which(x == 0)] <- .Machine$double.eps
-  x[1] <- ifelse(x[1] > 0, log(x[1]), -log(abs(x[1])))
-  x[length(x)] <- ifelse(x[length(x)] > 0, log(x[length(x)]), -log(abs(x[length(x)])))
-  seq_x <- seq(x[1], x[length(x)], by = 0.001)
-  result <- numeric_sec_deri(h, x = seq_x)
-  result[which(is.nan(result))] <- -.Machine$integer.max
+  # This function finds out numerical value of the second derivative
+  # at x of the function 
+  # if all of the numerical values are negative, then this function
+  # tells us that the func is log concave. vice versa
+  x_1 <- sp[-1]
+  x_0 <- sp[-length(sp)]
+  result <- dh(x_1) - dh(x_0)
+  result[which(is.nan(result))] = -Inf
   l <- 0
   if (max(result) < 0) {     # if max is less than zero, then all are
     l <- TRUE
@@ -130,7 +126,6 @@ logconcav_check <- function(x){ #x is domain given
   }
   return(l)
 }
-
 
 # D denotes the domain of f(x)
 # Choose k starting abscissae
@@ -398,11 +393,7 @@ ars <- function(n, f, min, max, sp = NaN){
       
       h <- function(x) {log(g_func(f,x))}
       dh <- function(x) {fderiv(h, x, 1)}   
-      check <- logconcav_check(f, c(min,max))
-      if (!check) { print("The function isn't log concave. Please input a log concave function")} 
-      else {
-       
-      
+
       if(sum(is.finite(sp)) < 2) {sp = starting_x(f, min, max)}
       if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
       sp <- sort(sp)
@@ -451,69 +442,97 @@ ars <- function(n, f, min, max, sp = NaN){
         return(zed)	
       }
       
-      u_k = function(y, support) 
-      {
-        u_plus = rep(0, length(y))
-        zed = z(support)
-        
-        piecewise.idx = findInterval(y, c(min, zed, max))
-        npieces = length(zed) + 2
-        for(pidx in 1:npieces){
-          yp = y[piecewise.idx == pidx]
-          xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
-          u_plus[piecewise.idx == pidx] = xx
-        }
-        return(u_plus)
-      }
+     u_k = function(y, support) 
+{
+  u_plus = rep(0, length(y))
+  zed = z(support)
+  
+  piecewise.idx = findInterval(y, c(min, zed, max))
+  npieces = length(zed) + 2
+  for(pidx in 1:npieces){
+    yp = y[piecewise.idx == pidx]
+    xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
+    u_plus[piecewise.idx == pidx] = xx
+  }
+  return(u_plus)
+}
+
+plus.cdf = function(x, sp) 
+{
+
+  
+  zed = z(sp)
+  
+  zlen = length(zed) ##NUMBER OF CDF POINTS
+  s_k_cdf = numeric(length(x))
+  norm.const = 0
+  for(i in 0:zlen) {
+    if(i == 0)
+    {
+      z_lower = -Inf
+    } else {
+      z_lower = zed[i]
+    }
+    
+    if(i == zlen)
+    {
+      z_upper = Inf
+    } else {
+      z_upper = zed[i+1]
+    }
+    
+    x_j = sp[i+1]
+    ds = exp(h(x_j))/dh(x_j) * ( exp((z_upper - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
+    
+    lower_int = z_lower < x & x <= z_upper ##which zj's are lower x
+    upper_int = x > z_upper ##which interval does x lie in
+    
+    s_k_cdf[lower_int] = s_k_cdf[lower_int] + exp(h(x_j))/dh(x_j) * ( exp((x[lower_int] - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
+    s_k_cdf[upper_int] = s_k_cdf[upper_int] + ds
+    
+    normaliser = normaliser + ds
+  }
+  
+  l = list( 
+    s_k_cdf = s_k_cdf / normaliser, 
+    normaliser = normaliser
+  )
+  return(l)
+}
+
+
+ s_k_sample = function(support)
+    {
+      zed = z(support)
+      sp = plus.cdf(zed, support)
+      zpct = sp$required_cdf
+      normaliser = sp$normaliser
+      ub = c(0, zpct, 1)
       
-      plus.cdf <- function(y, support) 
-      {
-        zed <- c(min, z(support), max)
-        p <- findInterval(y, zed)
-        l <- length(zed)
-        cdf_not_normalised <- numeric(l-1)
-        
-        for (i in 1:(l-1)){
-          cdf_not_normalised[i] <- integrate(function(z) exp(u_k(z, support)),zed[i], zed[i+1])$value
-        }
-        normaliser <- sum(cdf_not_normalised)
-        required_cdf <- (sum(cdf_not_normalised[1:(p-1)]) + integrate(function(z) exp(u_k(z, support)),zed[p],y)$value)  
-        l <- list(required_cdf = required_cdf/normaliser, normaliser = normaliser)
-        return(l)
-      }
+      unif.samp = runif(1)
       
-      s_k_sample = function(support)
+      fidx = findInterval(unif.samp, ub)
+      num.intervals = length(ub) - 1
+      zlow = c(min, zed)
+      res = rep(0, length(unif.samp))
+      for(i in 1:num.intervals)
       {
-        zed = z(support)
-        sp = sapply(zed, function(x) plus.cdf(x, support), simplify = TRUE)
-        zpct = sp[1,]
-        norm.const = sp[2][[1]]
-        ub = unlist(c(0, zpct, 1))
+        ui = unif.samp[ fidx == i ]
         
-        unif.samp = runif(1)
-        
-        fidx = findInterval(unif.samp, ub)
-        num.intervals = length(ub) - 1
-        zlow = c(min, zed)
-        res = rep(0, length(unif.samp))
-        for(i in 1:num.intervals)
+        if(length(ui) == 0)
         {
-          ui = unif.samp[ fidx == i ]
-          
-          if(length(ui) == 0)
-          {
-            next
-          }
-          
-          ## Invert the  CDF
-          yp = support[i]
-          zm = zlow[i]
-          tmp = (ui - ub[i]) * dh(yp) * norm.const / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-          tmp = yp + log(tmp) / dh(yp)
-          res[ fidx == i ] = tmp
+          next
         }
-        return(res)
+        
+        ## Invert the  CDF
+        yp = support[i]
+        zm = zlow[i]
+        tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+        tmp = yp + log(tmp) / dh(yp)
+        res[ fidx == i ] = tmp
       }
+      return(res)
+    }
       
       for( i in 1:n){
         
@@ -530,13 +549,16 @@ ars <- function(n, f, min, max, sp = NaN){
           } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
             accept = 1 
             #include xstar in sp
-            sp <- sort(c(sp, xstar))}
+            sp <- sort(c(sp, xstar))
+            check <- logconcav_check(sp)
+           if (!check) { stop("The function isn't log concave. Please input a log concave function")}
+            }
         }
         sample[i] = xstar
       }
       return(sample)
     }
-  }
+
 
 
 # Checking
@@ -547,12 +569,12 @@ ars(10, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
 ars(10, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
 ars(10, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2))
 ars(20, f = function(x) dnorm(x), -10, 10, c(-1, 1))
-ars(20, f = function(x) dnorm(x), -10, 10, c(-1, 1))
+ars(20, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))
 ars(20, f = function(x) dnorm(x), -20, 30, c(-19, 1))
 
-ars(20, f = function(x) dnorm(x), -20, 30, )
+ars(20, f = function(x) dnorm(x), -20, 30)
 # not working 
-ars(20, f = function(x) dnorm(x, 25, 3), -5, 45, c(-3, 37))
+#ars(20, f = function(x) dnorm(x, 25, 3), -5, 45, c(-3, 37))
 
 # non log concave function input
 ars(20, f = function(x) x^2, -10, 10, c(-8, 2)) # gives us the correct error
