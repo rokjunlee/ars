@@ -114,7 +114,7 @@ logconcav_check <- function(sp){ #x is starting points given
   # at x of the function 
   # if all of the numerical values are negative, then this function
   # tells us that the func is log concave. vice versa
-  p[length(sp)] <- sp[length(sp)] - 1
+  sp[length(sp)] <- sp[length(sp)] - 1
   x_1 <- sp[-1]
   x_0 <- sp[-length(sp)]
   result <- dh(x_1) - dh(x_0)
