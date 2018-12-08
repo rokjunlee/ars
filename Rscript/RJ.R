@@ -452,62 +452,128 @@ numeric_first_d(function(x) dnorm(x), 1) # -0.2419707
 eval_prime(expression(dnorm(x)), 1)[2]   # -0.2419707  # same as above
 numeric_first_d(function(x) dnorm(x), -100) # 0, because graph is essentially flat
 
+#-----------------------------------------------------------
 
+# First x_1 & x_k
+
+uniroot(function(x) x-2, lower=-3, upper=5)
+uniroot(function(x) x-2, lower=-3, upper=.Machine$integer.max)
+h <- .Machine$double.eps
+uniroot(function(x) -(x * dnorm(x)), lower=-6, upper=.Machine$integer.max)
+
+library(pracma)
+h <- function(x) {log(g_func(f,x))}
+dh <- function(x) {fderiv(h, x, 1)} 
+fderiv(function(x) dnorm(x), c(1,2,3))
+
+starting_x <- function(f, min, max){
+  require(pracma)
+  
+  if (is.finite(min) ==TRUE && is.finite(max) == TRUE) {
+      range <- max-min
+      h <- .Machine$double.eps^0.25
+      fd <- function(x)  (f(x+h) - f(x)) / h
+      #fd <- function(x) {fderiv(h, x, 1)}
+      root <- uniroot(fd, lower = min, upper = max)$root
+      return(c(root + range/10, root - range/10))
+  
+    } else if (is.finite(min) ==TRUE && is.infinite(max) ==TRUE) {
+      max <- .Machine$integer.max
+      h <- .Machine$double.eps^0.25
+      fd <- function(x)  (f(x+h) - f(x)) / h
+      root <- uniroot(fd, lower = min, upper = max)$root
+      range <- (root - min)
+      return(c(root + range/10, root - range/10) )
+  
+    } else if (is.infinite(min) && is.finite(max)) {
+      min <- -.Machine$integer.max
+      h <- .Machine$double.eps^0.25
+      fd <- function(x)  (f(x+h) - f(x)) / h
+      root <- uniroot(fd, lower = min, upper = max)$root
+      range <- (max - root)
+      return(c(root + range/10, root - range/10) )
+  
+    } else {
+      min <- -.Machine$integer.max
+      max <- .Machine$integer.max
+      h <- .Machine$double.eps^0.25
+      fd <- function(x)  (f(x+h) - f(x)) / h
+      root <- uniroot(fd, lower = min, upper = max)$root
+      return(c(root + 10, root - 10) )
+  }
+}
+
+starting_x(function(x) dnorm(x), -1, 1)
+starting_x(function(x) (x-1)^2, -1, 2)
+starting_x(function(x) dnorm(x, 2), -1, 4)
+starting_x(function(x) dnorm(x, 2), -1, Inf)
+starting_x(function(x) dnorm(x, 2), -Inf, Inf)
+
+
+
+dnorm(2)
+
+curve(dbeta(x, shape1 = 0.2, shape2 = 0.4))
+
+
+
+
+####
 starting_x <- function(func_x, min_x, max_x){
   # docstring
-    # divide into 4 cases
-    # 1: both min and max are given
-    # 2: when max is finite but min is missing or infinite
-    # 3: when min is finite but max is missing or infinite
-    # 4: otherwise
+  # divide into 4 cases
+  # 1: both min and max are given
+  # 2: when max is finite but min is missing or infinite
+  # 3: when min is finite but max is missing or infinite
+  # 4: otherwise
   
-    # func_x is the underlying function
-    # min_x and max_x are min and max of f's domain
+  # func_x is the underlying function
+  # min_x and max_x are min and max of f's domain
   
   
   # First case
   if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
     
     return(c(min_x, max_x))  # simplest case: just return min and max values
-  
-  # Second case  
+    
+    # Second case  
   } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
               && is.finite(max_x) == TRUE ) { # max is finite
     
     if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
       min_x <- -.Machine$integer.max # if derivative is positive then just use -.Machine$integer.max
     } else { # otherwise slowly increase min_x until it becomes positive
-      min_x <- -1000  
+      min_x <- -.Machine$integer.max 
       while (numeric_first_d(function(x) func_x(x), min_x) <= 0) { 
         print(numeric_first_d(function(x) func_x(x), min_x))
-        min_x <- min_x + 5
-        }
+        min_x <- min_x + (max_x-min_x)/2000
+      }
     }
     return(c(min_x, max_x))
     
     
-  # Third case
+    # Third case
   } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
               && is.finite(min_x)==TRUE ) {  # min is finite
     
     if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
       max_x <- .Machine$integer.max # if derivative is negative then just use .Machine$integer.max
     } else {  # otherwise slowly decrease max_x until it becomes negative
-      max_x <- 1000
+      max_x <- .Machine$integer.max
       while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
         print(numeric_first_d(function(x) func_x(x), max_x))
-        max_x <- max_x - 5
+        max_x <- max_x - (max_x-min_x)/2000
       }
     }
     return(c(min_x, max_x))
-  
-  # Fourth case
+    
+    # Fourth case
   } else {  # both min and max are infinite or both missing
     
     if (numeric_first_d(function(x) func_x(x), -.Machine$integer.max) > 0){
       min_x <- -.Machine$integer.max
     } else {
-      min_x <- -1000
+      min_x <- -5000
       while (numeric_first_d(function(x) func_x(x), min_x) <= 0) {
         print(numeric_first_d(function(x) func_x(x), min_x))
         min_x <- min_x + 5
@@ -517,14 +583,13 @@ starting_x <- function(func_x, min_x, max_x){
     if (numeric_first_d(function(x) func_x(x), .Machine$integer.max) < 0){
       max_x <- .Machine$integer.max
     } else {
-      max_x <- 1000
+      max_x <- 5000
       while (numeric_first_d(function(x) func_x(x), max_x) >= 0) {
         print(numeric_first_d(function(x) func_x(x), max_x))
         max_x <- max_x - 5
       }
     }
-    return(c(min_x, max_x))   
-    
+    return(c(min_x, max_x))  
   }
 }
 
@@ -533,63 +598,5 @@ starting_x(function(x) dnorm(x), min_x = 1, max_x=2)
 starting_x(function(x) dnorm(x), min_x= -Inf, max_x=2)
 starting_x(function(x) dnorm(x), min_x= -1, max_x=Inf)
 starting_x(function(x) dnorm(x), min_x= -Inf, max_x=Inf)
-starting_x(function(x) dnorm(x), min_x= NA, max_x=2)
-starting_x(function(x) dnorm(x), min_x= -1, max_x=NA)
-starting_x(function(x) dnorm(x), min_x= NA, max_x=NA)
+starting_x(function(x) dbeta(x, shape1 = 0.3, shape2 = 0.5), min_x= 0, max_x=1)
 
-
-
-
-#-----------------------------------------------------------
-# THIS WAS UNSUCCESSUFL 
-#Initializing abscissae
-
-#Sampling X_1, ..., X_k
-
-# at x_1, the derivative has to be positive if unbounded on the left
-# at x_k, the derivative has to be negative if unbounded on the right
-
-# input function will be given: ex
-
-sorting <- function(x){
-  # docstring
-    # this function orders element from smallest to the largest AFTER
-    # deleting Inf and -Inf
-    # input x is a discrete sequence of numbers 
-  sort_x <- sort(x) # from smallest to largest
-  
-  while (sort_x[1] < .Machine$double.xmin){
-    sort_x <- sort_x[-1]
-  }
-  
-  while (sort_x[length(sort_x)] > .Machine$double.xmax){
-    sort_x <- sort_x[-length(sort_x)]
-  }
-  return(sort_x)
-}
-
-# Checking
-sorting(c(-Inf, -Inf, 3, 2, 6, -1, Inf, Inf))
-
-
-absci <- function(func_x, xmin){
-    avg <- mean(xmin, na.rm = T)
-    func_x(avg)
-    var <- 3
-    foo <- one_two_prime(expression(func_x(x)), "x", 1)
-    return(foo)
-}
-
-
-
-
-eval(one_two_prime(expression(dnorm(x)), "x", 1)) %>% eval(4)
-absci(dnorm, 2)
-dnorm(3)
-
-func <- dnorm
-boo <- 32
-one_two_prime(expression(dnorm(boo)), "boo", 1) %>% eval()
-
-
-one_two_prime(expression(x^2), "x", 1) %>% eval()
