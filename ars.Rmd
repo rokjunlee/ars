@@ -294,7 +294,7 @@ plus.cdf = function(x, sp)
   
   zlen = length(zed) ##NUMBER OF CDF POINTS
   s_k_cdf = numeric(length(x))
-  norm.const = 0
+  normaliser = 0
   for(i in 0:zlen) {
     if(i == 0)
     {
