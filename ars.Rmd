@@ -106,27 +106,6 @@ numeric_sec_deri(logfunc(function(x) dnorm(x)), 38)
 
 1. Initializing Step
 ```{r}
-#check logconcave
-
-logconcav_check <- function(sp){ #x is starting points given
-  # docstring
-  # This function finds out numerical value of the second derivative
-  # at x of the function 
-  # if all of the numerical values are negative, then this function
-  # tells us that the func is log concave. vice versa
-  sp[length(sp)] <- sp[length(sp)] - 1
-  x_1 <- sp[-1]
-  x_0 <- sp[-length(sp)]
-  result <- dh(x_1) - dh(x_0)
-  result[which(is.nan(result))] = -Inf
-  l <- 0
-  if (max(result) <= 0) {     # if max is less than zero, then all are
-    l <- TRUE
-  } else {                   # case one or more second derivative evaluation is positive
-    l <- FALSE
-  }
-  return(l)
-}
 
 # D denotes the domain of f(x)
 # Choose k starting abscissae
@@ -211,167 +190,12 @@ starting_x <- function(func_x, min_x = -Inf, max_x = Inf){
   }
 }
 
-#calculate the functions u_k(X), s_k(x) and l_k(x)
-    # These are just formula <- just function
- g_func <- function(f, x){
-  # docstring:
-      # f is the underlying density function
-      # left_b and right_b are lower and upper bound, respectively
-      # x is where you want to evaluate
-      # after calculating the normalizing constant c  
-      # this function simply creates g as described in the paper
-    
-    c <- integrate(f, min, max)$value #normalizing constant
-    g <- f(x) / c
-    return(g)
-  }
-
-  h <- function(x) {log(g_func(f, x))}
-  dh <- function(x) {numeric_first_d(h, x, 1)} 
-
- u_func = function(x, sp) 
-        {
-          # docstring
-          # function calculates the upper hull piece corresponding to 
-          # the data sampled from Sk
-          # sp is the starting points
-          # x is the sampled point
-          z <- numeric(length(sp) + 1)
-          z[1] <- min
-          z[length(z)] <- max
-          z_middle <- sort(z(sp))
-          z[2:(length(z)-1)] <- z_middle
-          index = findInterval(x, z)
-          u <- h(sp[index]) + (x - sp[index])*dh(sp[index])
-          return(u)
-        }
-        
-        
-l_func <- function(x, sp) {
-          # docstring
-          # function calculates the lower hull piece corresponding to 
-          # the data sampled from Sk, set to -inf if x<x1 or x>xk
-          # sp is the starting points
-          # x is the sampled point
-          index <- findInterval(x, c(min, sp, max))
-          l <- 0
-          
-          if (x <= sp[(length(sp))] & x >= sp[1]){
-            l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / (sp[index] - sp[index - 1])} else{
-              l<- -Inf
-            }
-          return(l)
-          
-        }
-        
-z <- function(support)
-{
-  x0 <- head(support, n=-1)
-  x1 <- tail(support, n=-1)
-  zed <- x0 + (h(x0) - h(x1) + (x1 - x0)*dh(x1)) / (dh(x1) - dh(x0))
-  return(zed)	
-}
-
-u_k = function(y, support) 
-{
-  u_plus = rep(0, length(y))
-  zed = z(support)
-  
-  piecewise.idx = findInterval(y, c(min, zed, max))
-  npieces = length(zed) + 2
-  for(pidx in 1:npieces){
-    yp = y[piecewise.idx == pidx]
-    xx = h(support[pidx]) + (yp - support[pidx])*dh(support[pidx])
-    u_plus[piecewise.idx == pidx] = xx
-  }
-  return(u_plus)
-}
-
-plus.cdf = function(x, sp) 
-{
-
-  
-  zed = z(sp)
-  
-  zlen = length(zed) ##NUMBER OF CDF POINTS
-  s_k_cdf = numeric(length(x))
-  normaliser = 0
-  for(i in 0:zlen) {
-    if(i == 0)
-    {
-      z_lower = -Inf
-    } else {
-      z_lower = zed[i]
-    }
-    
-    if(i == zlen)
-    {
-      z_upper = Inf
-    } else {
-      z_upper = zed[i+1]
-    }
-    
-    x_j = sp[i+1]
-    ds = exp(h(x_j))/dh(x_j) * ( exp((z_upper - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
-    
-    lower_int = z_lower < x & x <= z_upper ##which zj's are lower x
-    upper_int = x > z_upper ##which interval does x lie in
-    
-    s_k_cdf[lower_int] = s_k_cdf[lower_int] + exp(h(x_j))/dh(x_j) * ( exp((x[lower_int] - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
-    s_k_cdf[upper_int] = s_k_cdf[upper_int] + ds
-    
-    normaliser = normaliser + ds
-  }
-  
-  l = list( 
-    s_k_cdf = s_k_cdf / normaliser, 
-    normaliser = normaliser
-  )
-  return(l)
-}
-
-
- s_k_sample = function(support)
-    {
-      zed = z(support)
-      sp = plus.cdf(zed, support)
-      zpct = sp$required_cdf
-      normaliser = sp$normaliser
-      ub = c(0, zpct, 1)
-      
-      unif.samp = runif(1)
-      
-      fidx = findInterval(unif.samp, ub)
-      num.intervals = length(ub) - 1
-      zlow = c(min, zed)
-      res = rep(0, length(unif.samp))
-      for(i in 1:num.intervals)
-      {
-        ui = unif.samp[ fidx == i ]
-        
-        if(length(ui) == 0)
-        {
-          next
-        }
-        
-        ## Invert the  CDF
-        yp = support[i]
-        zm = zlow[i]
-        tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-        tmp = yp + log(tmp) / dh(yp)
-        res[ fidx == i ] = tmp
-      }
-      return(res)
-    }
-
-
 ```
 
 
 ```{r}
 ### basic function structure
 ars <- function(n, f, min, max, sp = NA){
-    
     
     
     if (n <= 0 || !is.numeric(n)) 
@@ -392,7 +216,7 @@ ars <- function(n, f, min, max, sp = NA){
       }
       
       h <- function(x) {log(g_func(f,x))}
-      dh <- function(x) {numeric_first_d(h, x, 1)}   
+      dh <- function(x) {numeric_first_d(h, x)}   
 
       if(is.na(sp)) {sp = starting_x(f, min, max)}
       if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
@@ -586,10 +410,7 @@ logconcav_check <- function(sp){ #x is starting points given
 
 
 # Checking
-
 ars(10, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
-
-
 ars(10, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
 ars(10, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2)) #slow
 ars(20, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))

@@ -4,6 +4,7 @@ library(testthat)
 source("Rscript/RJ.R")
 
 
+# numeric_first_d
 test_that("function that numerically evaluates first derivative", {
   
   #tests 
@@ -29,6 +30,7 @@ test_that("function that numerically evaluates second derivative", {
     # second derivative of -x^2+2*x is  -2
     expect_equal(numeric_sec_deri(function(x) -x^2+2*x, -14), -2)
 })
+
 
 
 # logconcav_check
