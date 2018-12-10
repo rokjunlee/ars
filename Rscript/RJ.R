@@ -21,7 +21,7 @@ ex == dbeta(0.4, shape1 = 0.2, shape2 = 0.3)  #TRUE
 
 #-----------------------------------------------------------
 # uniform distribution
-  runif()
+  runif(2)
 
 #-----------------------------------------------------------
 # Integrating
@@ -61,6 +61,7 @@ D(D(expression(dnorm(x)), "x") , "x")  # second derivative for normal density
 D(D(expression(x^2), "x") , "x")       # second derivative, 2, which is correct
 
 # for evaluating
+x <- 2
 eval(D(expression(dnorm(x)), "x"))
 
 
@@ -82,10 +83,10 @@ one_two_prime <- function(func_x, var, order){
 }
 
 # Checking
-one_two_prime( expression(dnorm(x)), "x", 0)  # error bc order = 0
+#one_two_prime( expression(dnorm(x)), "x", 0)  # error bc order = 0
 one_two_prime( expression(dnorm(x)), "x", 1)  # correct expression
 one_two_prime( expression(dnorm(x)), "x", 2)  # correct expression
-one_two_prime( expression(dnorm(x)), "x", 3)  # error bc order = 3
+#one_two_prime( expression(dnorm(x)), "x", 3)  # error bc order = 3
 
 one_two_prime( expression(x), "x", 1)         # correct: 1
 one_two_prime( expression(x^2), "x", 2)       # correct: 2
@@ -199,6 +200,9 @@ logconcav_check <- function(func, x){
   }
   #return(result)
 }
+
+
+
 
 #Checking
     # log concave case
