@@ -44,7 +44,6 @@ numeric_sec_deri <- function(f, x){
   return(val)
 }
 
-c <- integrate(f, min, max)$value #normalizing constant
 g_func <- function(f, x){
   # docstring:
   # f is the underlying density function
@@ -139,6 +138,8 @@ plus.cdf = function(x, sp) {
     } else {
       z_upper = zed[i+1]
     }
+  }
+}
     
     s_k_sample = function(support)
     {
@@ -172,10 +173,26 @@ plus.cdf = function(x, sp) {
       }
       return(res)
   }
-    
-    
 
-    
+    #check logconcave
+logconcav_check <- function(sp){ #x is starting points given
+      # docstring
+      # This function finds out numerical value of the second derivative
+      # at x of the function 
+      # if all of the numerical values are negative, then this function
+      # tells us that the func is log concave. vice versa
+      x_1 <- sp[-1]
+      x_0 <- sp[-length(sp)]
+      result <- dh(x_1) - dh(x_0)
+      result[which(is.nan(result))] = -Inf
+      l <- 0
+      if (max(result) <= 0) {     # if max is less than zero, then all are
+        l <- TRUE
+      } else {                   # case one or more second derivative evaluation is positive
+        l <- FALSE
+      }
+      return(l)
+}    
 
 
 
@@ -183,26 +200,21 @@ plus.cdf = function(x, sp) {
 # ------functions-------------------------
 
 
-
 # g_func
 
+test_that("function gives the density of the normalized function", {
+     min <- -Inf
+     max <- Inf
+     f <- function(x) dnorm(x)
+     c <- integrate(f, min, max)$value #normalizing constant
+      #tests 
+      # expect result to be double type
+     expect_type(g_func(f, c(-2,2)), 'double')
+      
+      # first derivative of x^2 is 2x and at x=2, we have 4
+     expect_equal(g_func(f, c(-2,2)), dnorm(c(-2,2)))
+})
 
-
-
-
-
-test_that("")
-
-g_func <- function(f, x){
-  # docstring:
-  # f is the underlying density function
-  # left_b and right_b are lower and upper bound, respectively
-  # x is where you want to evaluate
-  # after calculating the normalizing constant c  
-  # this function simply creates g as described in the paper
-  g <- f(x) / c
-  return(g)
-}
 
 
 # numeric_first_d
@@ -238,17 +250,33 @@ test_that("function that numerically evaluates second derivative", {
 test_that("log concavity check for input function", {
   
   #tests
-    # log-dnorm is log-concave
-    expect_true( logconcav_check(function(x) dnorm(x), c(1,2,3)) )  
+    f <- function(x) dnorm(x)
+    # dnorm is log-concave
+    expect_true( logconcav_check(c(1,2,3)) )  
   
-    # log-dnorm is log-concave regardless of mean and standard deviation
-    expect_true( logconcav_check(function(x) dnorm(x, 2, 5), c(1,2,3)) )  
+    # dnorm is log-concave regardless of mean and standard deviation
+    f<- function(x) dnorm(x, 2, 5)
+    expect_true(logconcav_check(c(1,2,3)))  
     
-    # log debeta is NOT log-concave
-    expect_false( logconcav_check( function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3), c(0.1, 0.2)) )
+    # log debeta with inappropriate parameters is not log-concave
+    f<- function(x) dbeta(x, shape1 = 0.2, shape2 = 0.3)
+    expect_false( logconcav_check(c(0.1, 0.2)) ) 
+    
+    # log debeta with appropriate parameters is log-concave
+    f<- function(x) dbeta(x, shape1 = 2, shape2 = 2)
+    expect_true( logconcav_check(c(0.1, 0.6)) ) 
+    
+    # log gamma with inappropriate parameters is not log-concave
+    f<- function(x) dgamma(x, 0.2)
+    expect_false( logconcav_check(c(1, 5)) ) 
+    
+    # log debeta with appropriate parameters is log-concave
+    f<- function(x) dgamma(x, 5)
+    expect_true( logconcav_check(c(1, 5)) ) 
+    
+    #log t distribution is not log-concave
+    f<- function(x) dt(x, 5)
+    expect_false( logconcav_check(c(1, 5)) ) 
 })
-
-
-
 
 
