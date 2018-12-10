@@ -333,19 +333,18 @@ plus.cdf = function(x, sp)
       
       
       
-      num.intervals = length(ub) - 1
+      
       zlow = c(min, zed) ##min of domain
       res = c(0)
-        ui <- runif(1)
-        i <- findInterval(unif.samp, ub)
-        ## Invert the  CDF
-        yp = support[i]
-        zm = zlow[i]
-        tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-        tmp = yp + log(tmp) / dh(yp)
-        return(tmp)
- }
-  
+      ui <- runif(1)
+      i <- findInterval(ui, ub)
+      ## Invert the  CDF
+      yp = support[i]
+      zm = zlow[i]
+      tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
+      tmp = yp + log(tmp) / dh(yp)
+      return(tmp)
+ } 
  #check logconcave
 logconcav_check <- function(sp){ #x is starting points given
   # docstring
