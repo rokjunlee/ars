@@ -329,34 +329,26 @@ plus.cdf = function(x, sp)
     {
       zed = z(support)
       sp = plus.cdf(zed, support)
-      zpct = sp$required_cdf
+      zpct = sp$s_k_cdf
       normaliser = sp$normaliser
       ub = c(0, zpct, 1)
       
-      unif.samp = runif(1)
       
-      fidx = findInterval(unif.samp, ub)
+      
+      
       num.intervals = length(ub) - 1
-      zlow = c(min, zed)
-      res = rep(0, length(unif.samp))
-      for(i in 1:num.intervals)
-      {
-        ui = unif.samp[ fidx == i ]
-        
-        if(length(ui) == 0)
-        {
-          next
-        }
-        
+      zlow = c(min, zed) ##min of domain
+      res = c(0)
+        ui <- runif(1)
+        i <- findInterval(unif.samp, ub)
         ## Invert the  CDF
         yp = support[i]
         zm = zlow[i]
         tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
         tmp = yp + log(tmp) / dh(yp)
-        res[ fidx == i ] = tmp
-      }
-      return(res)
+        return(tmp)
  }
+ 
  #check logconcave
 
 logconcav_check <- function(sp){ #x is starting points given
