@@ -523,15 +523,20 @@ curve(dbeta(x, shape1 = 0.2, shape2 = 0.4))
 #############################################
 optimize(function(x) -(x-2)^2, c(-3,5), maximum = TRUE)$maximum
 integrate(function(x) 0.2, 0,5)
-
+quantile(c(0.4,1), 0.2) %>% as.vector()
 optimize(function(x) dnorm(x), c(-2, 105), maximum = T)
 optimize(function(x) dnorm(x), c(-115, 105), maximum = T)
 
 
-starting_x <- function(func_x, min_x, max_x){
+starting_x1 <- function(func_x, min_x, max_x){
   # First case
   if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
-    return(c(min_x, max_x))
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51)%>% as.vector()
+    return(c(left, right))
     
     # Second case  
   } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
@@ -540,8 +545,8 @@ starting_x <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
            c(min_x, max_x), 
            maximum = TRUE)$maximum
-  left <- quantile(c(min_x, opt, max_x), 0.49)
-  right <- quantile(c(min_x, opt, max_x), 0.51)
+  left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+  right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
   return(c(left, right))
   } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
               && is.finite(min_x)==TRUE ) {
@@ -549,8 +554,8 @@ starting_x <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
                     c(min_x, max_x), 
                     maximum = TRUE)$maximum
-    left <- quantile(c(min_x, opt, max_x), 0.49)
-    right <- quantile(c(min_x, opt, max_x), 0.51)
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
     return(c(left, right))
   } else {
     max_x <- 100
@@ -558,17 +563,18 @@ starting_x <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
                     c(min_x, max_x), 
                     maximum = TRUE)$maximum
-    left <- quantile(c(min_x, opt, max_x), 0.49)
-    right <- quantile(c(min_x, opt, max_x), 0.51)
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
     return(c(left, right))
   }
 }
 
-starting_x(function(x) dnorm(x), -2, 3)
-starting_x(function(x) dnorm(x), -2, Inf)
-starting_x(function(x) dnorm(x,78), -2, Inf)
-starting_x(function(x) dbeta(x, shape1 = 0.3, shape2 = 0.5), 0, 1)
-starting_x(function(x) dnorm(x), -2, 89)
+starting_x1(function(x) dnorm(x), -2, 3)
+starting_x1(function(x) dnorm(x), -2, Inf)
+starting_x1(function(x) dnorm(x,78), -2, Inf)
+starting_x1(function(x) dbeta(x, shape1 = 0.3, shape2 = 0.5), 0, 1)
+starting_x1(function(x) dnorm(x), -2, 89)
+starting_x1(function(x) dt(x, 3), -2, 89)
 
 quantile(c(-.Machine$integer.max, 4, .Machine$integer.max))
 #############################################
@@ -590,7 +596,12 @@ starting_x <- function(func_x, min_x, max_x){
   # First case
   if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
     
-    return(c(min_x, max_x))  # simplest case: just return min and max values
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49)
+    right <- quantile(c(min_x, opt, max_x), 0.51)
+    return(c(left, right))
     
     # Second case  
   } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
