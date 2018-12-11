@@ -159,61 +159,38 @@ u_k = function(y, support) {
 
 
 
-plus.cdf = function(x, sp) {
-  zed = z(sp)
+plus.cdf <- function(sp) 
+  {
+    
+    zed = c(min,z(sp),max)
+    l = length(zed) - 1
+    cdf_vals = numeric(l)
+    
+    for (i in 1:l) {
+      x_j = sp[i]
+      cdf_vals[i] = exp(h(x_j))/dh(x_j) * ( exp((zed[i+1] - x_j)*dh(x_j)) - exp((zed[i] - x_j)*dh(x_j)) )}
+    
+    normaliser <- sum(cdf_vals)
+    return(cdf_vals/normaliser)
+  }
+
+
+
+
+s_k_sample <- function(sp) {
+  zed <- c(min,z(sp),max)
+  probs <- plus.cdf(sp)
   
-  zlen = length(zed) ##NUMBER OF CDF POINTS
-  s_k_cdf = numeric(length(x))
-  normaliser = 0
-  for(i in 0:zlen) {
-    if(i == 0)
-    {
-      z_lower = -Inf
-    } else {
-      z_lower = zed[i]
-    }
-    
-    if(i == zlen)
-    {
-      z_upper = Inf
-    } else {
-      z_upper = zed[i+1]
-    }
-  }
+  i <- sample(length(sp), size = 1, prob = probs)
+  u <- (runif(1) * probs[i])
+  #return(y)
+  tmp = (u* dh(sp[i]) / exp(h(sp[i]))) + exp( (zed[i] - sp[i])*dh(sp[i]) )
+  y <- ifelse(is.nan(log(tmp)), sp[i], log(tmp)) 
+  y =  (y / dh(sp[i])) + sp[i]
+  return(y)
+  
 }
-    
-s_k_sample = function(support)
-    {
-      zed = z(support)
-      sp = plus.cdf(zed, support)
-      zpct = sp$required_cdf
-      normaliser = sp$normaliser
-      ub = c(0, zpct, 1)
-      
-      unif.samp = runif(1)
-      
-      fidx = findInterval(unif.samp, ub)
-      num.intervals = length(ub) - 1
-      zlow = c(min, zed)
-      res = rep(0, length(unif.samp))
-      for(i in 1:num.intervals)
-      {
-        ui = unif.samp[ fidx == i ]
-        
-        if(length(ui) == 0)
-        {
-          next
-        }
-        
-        ## Invert the  CDF
-        yp = support[i]
-        zm = zlow[i]
-        tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-        tmp = yp + log(tmp) / dh(yp)
-        res[ fidx == i ] = tmp
-      }
-      return(res)
-  }
+
 
 
 logconcav_check <- function(sp){ #x is starting points given
@@ -249,6 +226,7 @@ logconcav_check <- function(sp){ #x is starting points given
 min <- -Inf
 max <- Inf
 f <- function(x) dnorm(x)
+sp <- c(-5,6)
 c <- integrate(f, min, max)$value #normalizing constant
 
 
@@ -340,6 +318,7 @@ test_that("function z, u_func, l_func gives approproiate values", {
   # tests
     # expect result to be double type
     expect_type(z(c(-2, 1)), 'double')
+    expect_length(z(sp), length(sp)-1)
     
     # expect result to be double type
     expect_type(u_func(0.5, c(-2,2)), 'double')
@@ -348,15 +327,32 @@ test_that("function z, u_func, l_func gives approproiate values", {
     expect_type(l_func(0.5, c(-2,2)), 'double')
 })
 
-
-
-# u_k
+              
 
 
 # plus.cdf
+test_that("plus.cdf functions returns legitimate values, adding to 1"){
+              #tests
+ #expect that the probabilities of the intervals add to 1             
+testthat::expect_equal(sum(plus.cdf(sp)), 1)
+              
+ #expect that the probabilities add to 1
+testthat::expect_gt(product(plus.cdf(sp), 0)             
+              }
+              
+              
 
 
 # s_k_sample
+test_that("samples are generated within the domain"){
+       #tests
+        f <<- function(x) dbeta(x,3,3)
+         sp <<- c(0.1,0.6)
+         min <<- 0
+         mac <<- 1         
+        expect_gt(s_k_sample(sp),0)
+        expect_lt(s_k_sample(sp),1)          
+ }
 
 
 
@@ -481,5 +477,15 @@ test_that("function ars samples uniform distribution correctly", {
   # the number of sampled points is correct
   expect_equal(length(sample4), n)
 })
+  
+  
+  #TESTING OUTPUT OF FUNCTION
+                      
+##hypothesis testing
+#Our Null hypothesis is that our sample follows a standard normal density
+                      
+y <- ars(1000, function(x) dnorm(x), -Inf, Inf, c(-2,2))
+p_value <- shapiro.test(y)$p.value
+
 
 
