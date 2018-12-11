@@ -211,15 +211,14 @@ ars <- function(n, f, min, max, sp = NA){
     # the data sampled from Sk, set to -inf if x<x1 or x>xk
     # sp is the starting points
     # x is the sampled point
-    index <- findInterval(x, c(min, sp, max))
+    index <- findInterval(x, sp)
     l <- 0
+    if (index == 0 | index == length(sp) ){
+      l <- -Inf}
+    else {
+      l<- ((sp[index + 1] - x) * h(sp[index]) + (x - sp[index]) * h(sp[index + 1])) / 
+        (sp[index + 1] -sp[index])} 
     
-    if (x <= sp[(length(sp))] & x >= sp[1]){
-      l<- ((sp[index] - x) * h(sp[index - 1]) + (x - sp[index - 1]) * h(sp[index])) / 
-        (sp[index] -sp[index - 1])} 
-    else{
-      l<- -Inf
-    }
     return(l)
   }
   
