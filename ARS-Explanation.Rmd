@@ -43,6 +43,9 @@ There were some challenges we ran into, like the calculation of exponents tendin
 
 
 [[SQUEEZING AND REJECTION TEST EXPALANTION]]
+For each point(named xstar) randomly generalized using the s_k_sample function, we use the squeezing and rejection test as methods of rejecting or accepting. Specifically, if the xstar passes the squeezing test formed by the upper and lower hull functions, then it is accepted at the squeezing step, and will thus will not go through the rejection test. Otherwise, if the xstar failed to go through the squeezing test, it will proceed to the rejection test formed by the h density function and the upper hull function. If xstar passes the rejection test, it will be accepted; otherwise, xstar will be rejected. Additionally, if xstar failed to pass the sqeezing test, and once h(x) and dh(x) are evaluated, we will update the starting point vector by adding xstar to the vector of starting points, and sort the starting points again to ensure that the starting points are in ascending order. 
+
+The while loop in the ars function will allow us to repeatedly sample xstar using the s_k_sample function, until we have an xstar that is accepted, and the accepted xstar will be added as one point in our final sample. We will continue this process as a for loop until we have n accepted points sampled. 
 
 
 ## Testings
