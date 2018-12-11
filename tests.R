@@ -288,7 +288,7 @@ test_that("g_func function gives the density of the normalized function", {
     # expect result to be double type
     expect_type(g_func(f, c(-2,2)), 'double')
       
-    # first derivative of x^2 is 2x and at x=2, we have 4
+    # the g_func should return the same value as the normalized density
     expect_equal(g_func(f, c(-2,2)), dnorm(c(-2,2)))
 })
 
@@ -299,7 +299,7 @@ test_that("h function gives the density of the log of g_func", {
     # expect result to be double type
     expect_type(h(c(-2,2)), 'double')
     
-    # first derivative of x^2 is 2x and at x=2, we have 4
+    # h function should return the same value as the log of the normalized density
     expect_equal(h(c(-2,2)), log(dnorm(c(-2,2))))
 })
 
@@ -310,7 +310,7 @@ test_that("dh function gives the derivative of the h function", {
     # expect result to be double type
     expect_type(dh(c(-2,2)), 'double')
     
-    # first derivative of x^2 is 2x and at x=2, we have 4
+    # dh function should return the first derivative of the log of the density
     expect_equal(dh(c(-2,2)), numeric_first_d(logfunc(f), c(-2,2)))
 })
 
@@ -462,7 +462,7 @@ test_that("function ars samples correctly even if the user does not input starti
 test_that("function ars() catches non-log-concave cases", {
   
   #tests
-    # t -distribution is not log concavie
+    # t-distribution is not log concave
     expect_error(ars(20, f = function(x) dt(x, 2), -10, 10, c(-2, 3)))
 })
 
