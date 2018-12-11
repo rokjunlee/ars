@@ -248,30 +248,42 @@ ars <- function(n, f, min, max, sp = NA){
 ##'we store this as a list, each element corresponding to the cdf of that interval.
 ##'we normalise the cdf by dividing by its sum.
   
-plus.cdf <- function(sp) 
-{
+##'docstring
+##'for each starting points, we calculate the value of cdf from zi to zi+1. 
+##'we store this as a list, each element corresponding to the cdf of that interval.
+##'we normalise the cdf by dividing by its sum.
   
-  zed = c(min,z(sp),max)
-  l = length(zed) - 1
-  cdf_vals = numeric(l)
-  
-  for (i in 1:l) {
-    x_j = sp[i]
-    cdf_vals[i] = exp(h(x_j))/dh(x_j) * ( exp((zed[i+1] - x_j)*dh(x_j)) - exp((zed[i] - x_j)*dh(x_j)) )}
-  
+  plus.cdf <- function(sp) 
+  {
+    
+    zed = c(min,z(sp),max)
+    l = length(zed) - 1
+    cdf_vals = numeric(l)
+    
+    for (i in 1:l) {
+      x_j = sp[i]
+      cdf_vals[i] = exp(h(x_j))/dh(x_j) * ( exp((zed[i+1] - x_j)*dh(x_j)) - exp((zed[i] - x_j)*dh(x_j)) )}
+    
     normaliser <- sum(cdf_vals)
-   return(cdf_vals/normaliser)
-}
+    return(cdf_vals/normaliser)
+  }
 
 ##'docstring
 ##'sampling from cdf: we pick the cdf interval from which to sample from with probability equal to its value
 ##'then we sample a point from that interval uniformly.
 
 s_k_sample <- function(sp) {
+  zed <- c(min,z(sp),max)
   probs <- plus.cdf(sp)
-  which_bin <- sample(length(sp), size = 1, prob = probs)
-  sample <- runif(1, min = 0, max = probs[which_bin])
-  return(sample)
+  
+  i <- sample(length(sp), size = 1, prob = probs)
+  u <- (runif(1) * probs[i])
+  #return(y)
+  tmp = (u* dh(sp[i]) / exp(h(sp[i]))) + exp( (zed[i] - sp[i])*dh(sp[i]) )
+  y <- ifelse(is.nan(log(tmp)), (tmp-1) - (1/2)*(tmp-1)^2 + (1/3)*(tmp-1)^3, log(tmp)) 
+  y =  (y / dh(sp[i])) + sp[i]
+  return(y)
+  
 }
   #check logconcave
   logconcav_check <- function(sp){ #x is starting points given
