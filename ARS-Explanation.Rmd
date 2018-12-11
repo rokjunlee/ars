@@ -16,6 +16,9 @@ Github user name: rokjunlee
 <!-- The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work. -->
 
 ### Explanation
+
+The basic design of the function was synchronous with the general pattern described in the paper. 
+
 Here are some assumptions that we took for granted. We assume that the the user will input valid density with correct minimum and maximum values of the domain. For example, if the input density is the standard normal density, then the minimum and maximum values will be `-Inf` and `Inf`, respectively.
 
 We also started with assuming that the starting points (2) will be provided, just to make computations easier. `ars()` will make sure that the two given starting points are on the opposite sides of the maximum of the input (log) function by checking if the product of the first derivative evaluations at the two starting points are negative. Later, we relaxed those conditions to make the function work without starting points input. The mechanism for choosing two starting points will be described shortly. 
@@ -23,9 +26,6 @@ We also started with assuming that the starting points (2) will be provided, jus
 The very first main task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
 When the user does not provide starting points, `ars()` function will sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and minimum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector `c(minimum_x, 'x-coordinate', maximum_x)` and then designate the 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then minimum and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
-
-
-[[EXPLANATION ON U, L, Z, AND SAMPLING FUNCTION SHOULD GO HERE]]
 
 
 Next step is to determine if the input function is **logarithmically concave or not**. The function should not proceed to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
@@ -39,9 +39,8 @@ After second derivatives were evaluated at several points in the domain, the sig
 
 To calculate the linear lower and upperhull , the R function `findInterval()` was used, which helped determine which interval the input 'x' belonged to, and therefore to calculate the upper/lower hull corresponding only to that interval. 
 
-The basic design of the function was synchronous with the general pattern described in the paper. One challenge was sampling from the piecewise exponential density. But since the cdf of the upperhull (being linear) was calculable analytically, the inverse cdf method was useful in this case.   
 
-There were some challenges we ran into, like the calculation of exponents tending to infinity. For that, we tried to add sanity tests for input arguments.
+The computation of Z's was done as described in the formula from the paper. To sample from the exponential upper hull, for every Z's, we calculate the areas between $z_i$ and  $z_i+1$, and store it as a vector. Then to sample, we choose an interval index with probabilities proportional to their areas. From the area then, we use the inverse cdf function (which was pretty easy to calculate because it was a linear function) to calculate the inverse cdf of a randomly sampled uniform probability, with the areas of the all the intervals before that as normalising 
 
 
 
@@ -52,7 +51,10 @@ The while loop in the ars function will allow us to repeatedly sample xstar usin
 
 ### Testings
 
-To test the package, we created the test.R file in located in the tests directory of the package. To implement tests, we sourced the ars function and defined all the functions we used in the ars function. Using `test_that()`, we first tested all the Auxiliary functions (such as `numeric_first_d`, `numeric_sec_deri`, `starting_x1`) and functions defined inside the ars function (such as logconcav_check, u_func, l_func, g_func, h, and dh) to check if these function outputs are of reasonable types and values. Then we tested the primary `ars` function for different distributions (such as dnorm, dgamma, and dbeta) to see if the `ars` function samples correctly, including cases where user does not provide the starting points. Lastly, we tested to see that if the input function is not log-concave, we could catch such cases and quit the sampling process as the sampling proceeds.
+To test the package, we created the test.R file, located in the tests directory of the package.
+To implement tests, we sourced the ars function and defined all the functions we used in the ars function. Using `test_that()`, we first tested all the Auxiliary functions (such as `numeric_first_d`, `numeric_sec_deri`, `starting_x1`) and functions defined inside the ars function (such as logconcav_check, u_func, l_func, g_func, h, and dh) to check if these function outputs are of reasonable types and values. 
+Then, we tested the primary `ars` function for different distributions (such as dnorm, dgamma, and dbeta) to see if the `ars` function samples correctly, including cases where user does not provide the starting points. 
+Lastly, we tested to see that if the input function is not log-concave, we could catch such cases and quit the sampling process as the sampling proceeds.
 
 
 ### Specific Contributions of each team member 
@@ -66,7 +68,7 @@ Although we divided the task as below, we all contributed to all the tasks to so
 
 * computing the cdf, 
 
-* sampling from the exponential density.
+* sampling from the exponential densit using inverse cdf method
 
 #### Yihuan Song
 * The basic structure of the ars function (for loop and while loop)
