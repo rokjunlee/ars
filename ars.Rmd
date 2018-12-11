@@ -244,79 +244,37 @@ ars <- function(n, f, min, max, sp = NA){
     }
     return(u_plus)
   }
-  plus.cdf = function(x, sp) 
-  {
-    
-    zed = z(sp)
-    
-    zlen = length(zed) ##NUMBER OF CDF POINTS
-    s_k_cdf = numeric(length(x))
-    normaliser = 0
-    for(i in 0:zlen) {
-      if(i == 0)
-      {
-        z_lower = -Inf
-      } else {
-        z_lower = zed[i]
-      }
-      
-      if(i == zlen)
-      {
-        z_upper = Inf
-      } else {
-        z_upper = zed[i+1]
-      }
-      
-      x_j = sp[i+1]
-      ds = exp(h(x_j))/dh(x_j) * ( exp((z_upper - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
-      
-      lower_int = z_lower < x & x <= z_upper ##which zj's are lower x
-      upper_int = x > z_upper ##which interval does x lie in
-      
-      s_k_cdf[lower_int] = s_k_cdf[lower_int] + exp(h(x_j))/dh(x_j) * ( exp((x[lower_int] - x_j)*dh(x_j)) - exp((z_lower - x_j)*dh(x_j)) )
-      s_k_cdf[upper_int] = s_k_cdf[upper_int] + ds
-      
-      normaliser = normaliser + ds
-    }
-    
-    l = list( 
-      s_k_cdf = s_k_cdf / normaliser, 
-      normaliser = normaliser
-    )
-    return(l)
-  }
-  s_k_sample = function(support)
-  {
-    zed = z(support)
-    sp = plus.cdf(zed, support)
-    zpct = sp$required_cdf
-    normaliser = sp$normaliser
-    ub = c(0, zpct, 1)
-    
-    unif.samp = runif(1)
-    
-    fidx = findInterval(unif.samp, ub)
-    num.intervals = length(ub) - 1
-    zlow = c(min, zed)
-    res = rep(0, length(unif.samp))
-    for(i in 1:num.intervals)
-    {
-      ui = unif.samp[ fidx == i ]
-      
-      if(length(ui) == 0)
-      {
-        next
-      }
-      
-      ## Invert the  CDF
-      yp = support[i]
-      zm = zlow[i]
-      tmp = (ui - ub[i]) * dh(yp) * normaliser / exp(h(yp)) + exp( (zm - yp)*dh(yp) )
-      tmp = yp + log(tmp) / dh(yp)
-      res[ fidx == i ] = tmp
-    }
-    return(res)
-  }
+ 
+ ##'docstring
+##'for each starting points, we calculate the value of cdf from zi to zi+1. 
+##'we store this as a list, each element corresponding to the cdf of that interval.
+##'we normalise the cdf by dividing by its sum.
+  
+plus.cdf <- function(sp) 
+{
+  
+  zed = c(min,z(sp),max)
+  l = length(zed)
+  cdf_vals = numeric(length(l))
+  
+  for(i in 1:l) {
+    x_j = sp[i]
+    cdf_vals[i] = exp(h(x_j))/dh(x_j) * ( exp((zed[i+1] - x_j)*dh(x_j)) - exp((zed[i] - x_j)*dh(x_j)) )}
+  
+    normaliser <- sum(cdf)
+   return(cdf/normaliser)
+}
+
+##'docstring
+##'sampling from cdf: we pick the cdf interval from which to sample from with probability equal to its value
+##'then we sample a point from that interval uniformly.
+
+s_k_sample <- function(sp) {
+  probs <- plus.cdf(sp)
+  which_bin <- sample(length(sp), size = 1, prob = probs)
+  sample <- runif(1, min = 0, max = probs[which_bin])
+  return(sample)
+}
   #check logconcave
   logconcav_check <- function(sp){ #x is starting points given
     # docstring
