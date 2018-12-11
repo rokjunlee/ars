@@ -9,10 +9,11 @@ editor_options:
   chunk_output_type: console
 ---
 ### Library
-```{r}
+```{r, message=F}
 library(AdapSamp)
 library(rlang)
 library(pracma)
+library(tidyverse)
 ```
 
 #### Steps
@@ -22,12 +23,10 @@ library(pracma)
 
 #1. RFUNC.
 #2. N : NUMBER OF POINTS NEEDED
-#3. (OPTIONAL) STARTINGPOINTS EG C(1,2)
-#4. (OPTIONAL) DOMAIN
+#3. MIN and MAX of the DOMAIN
+#4. (OPTIONAL) STARTINGPOINTS EG C(1,2)
 
-#for now let's assume the user has input all the arguments. 
-
-
+For now let's assume the user has input all the arguments. 
 
 a) initialize X_1, ... x_K
       how do we choose k? should be user input, user provide it
