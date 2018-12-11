@@ -254,15 +254,15 @@ plus.cdf <- function(sp)
 {
   
   zed = c(min,z(sp),max)
-  l = length(zed)
-  cdf_vals = numeric(length(l))
+  l = length(zed) - 1
+  cdf_vals = numeric(l)
   
-  for(i in 1:l) {
+  for (i in 1:l) {
     x_j = sp[i]
     cdf_vals[i] = exp(h(x_j))/dh(x_j) * ( exp((zed[i+1] - x_j)*dh(x_j)) - exp((zed[i] - x_j)*dh(x_j)) )}
   
-    normaliser <- sum(cdf)
-   return(cdf/normaliser)
+    normaliser <- sum(cdf_vals)
+   return(cdf_vals/normaliser)
 }
 
 ##'docstring
