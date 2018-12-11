@@ -9,6 +9,15 @@ editor_options:
   chunk_output_type: console
 ---
 
+#### Library
+```{r}
+library(AdapSamp)
+library(rlang)
+library(pracma)
+library(tidyverse)
+```
+
+
 
 #### Steps
 
@@ -108,8 +117,6 @@ numeric_sec_deri <- function(f, x){
     # better to find x_1 as small as possible as long as derivative is positive and density is positive
 starting_x1 <- function(func_x, min_x, max_x){
   
-  require(tidyverse)
-  
   # First case
   if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
     opt <- optimize(function(x) func_x(x), 
@@ -156,11 +163,7 @@ starting_x1 <- function(func_x, min_x, max_x){
 ```{r}
 ### basic function structure
 ars <- function(n, f, min, max, sp = NA){
-  
-  # load package
-  require(AdapSamp)
-  require(rlang)
-  require(pracma)
+
   
   
   if (n <= 0 || !is.numeric(n)) 
@@ -247,15 +250,11 @@ ars <- function(n, f, min, max, sp = NA){
   }
  
 
-  plus.cdf <- function(sp) 
-  {
+  plus.cdf <- function(sp) {
    #docstring
 #for each starting points, we calculate the value of cdf from zi to zi+1. 
 #we store this as a list, each element corresponding to the cdf of that interval.
 ##we normalise the cdf by dividing by its sum.
-  
-
-  
     
     zed = c(min,z(sp),max)
     l = length(zed) - 1
@@ -268,7 +267,6 @@ ars <- function(n, f, min, max, sp = NA){
     normaliser <- sum(cdf_vals)
     return(cdf_vals/normaliser)
   }
-
 
 
 s_k_sample <- function(sp) {
