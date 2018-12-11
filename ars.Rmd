@@ -164,12 +164,13 @@ starting_x1 <- function(func_x, min_x, max_x){
 ars <- function(n, f, min, max, sp = NA){
 
   
-  
+  # Input validation for sample size and domain
   if (n <= 0 || !is.numeric(n)) 
     stop("Please enter positive integers for sample size.")
   if (min >= max || !is.numeric(min) || !is.numeric(max) ) 
     stop("Please input valid domain.")
   
+  # create normalized density
   g_func <- function(f, x){
     # docstring:
     # f is the underlying density function
@@ -183,14 +184,21 @@ ars <- function(n, f, min, max, sp = NA){
     return(g)
   }
   
+  # Create the log of the normalized density
   h <- function(x) {log(g_func(f,x))}
+  # Create the function for evaluating the derivative of the h function
   dh <- function(x) {pracma::fderiv(h, x, 1)}
+  # Check if the user provides starting points
   if(sum(is.finite(sp)) < length(sp)) {sp = starting_x1(f, min, max)}
+  # Check if the starting points are in opposite sides of the density's maximum
   if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
   sp <- sort(sp)
+  # Initialize sample
   sample <- numeric(n)
+  #adjust for the uniform density case
   if (prod(dh(sp) == 0) == 1) { sample <- runif(n, min, max); return(sample)} else {
   
+  # Evaluate the upper hull at a specific point
   u_func = function(x, sp) 
   {
     # docstring
@@ -208,6 +216,7 @@ ars <- function(n, f, min, max, sp = NA){
     return(u)
   }
   
+  # Evaluate the lower hull at a specific point
   l_func <- function(x, sp) {
     # docstring
     # function calculates the lower hull piece corresponding to 
@@ -225,6 +234,7 @@ ars <- function(n, f, min, max, sp = NA){
     return(l)
   }
   
+  # Calculate the vector of Z's
   z <- function(support)
   {
     x0 <- head(support, n=-1)
@@ -233,6 +243,7 @@ ars <- function(n, f, min, max, sp = NA){
     return(zed)	
   }
   
+  # Store all the upper hull pieces at one place
   u_k = function(y, support) 
   {
     u_plus = rep(0, length(y))
@@ -248,7 +259,7 @@ ars <- function(n, f, min, max, sp = NA){
     return(u_plus)
   }
  
-
+  # Calculate the probability of intervals
   plus.cdf <- function(sp) {
    #docstring
 #for each starting points, we calculate the value of cdf from zi to zi+1. 
@@ -267,7 +278,7 @@ ars <- function(n, f, min, max, sp = NA){
     return(cdf_vals/normaliser)
   }
 
-
+ #function to generate xstar from s_k
 s_k_sample <- function(sp) {
 #docstring
 #sampling from cdf: we pick the cdf interval from which to sample from with probability equal to its value
@@ -303,30 +314,37 @@ s_k_sample <- function(sp) {
     }
     return(l)
   }
-  ##begin sampling
+  
+  
+  ## begin sampling
   
   for( i in 1:n){
     
     accept = 0
     check = 0
+    
+    # proceed to sample until one point is accepted by the squeezing/rejection tests
     while(!accept){
       
       u <- runif(1)
       xstar <- s_k_sample(sp)
       
-      #squeezing and rejection tests
+      # squeezing and rejection tests
       if (u <= exp(l_func(xstar, sp) - u_func(xstar, sp))) { 
         accept = 1 
       } else if (u <= exp(h(xstar) - u_func(xstar, sp))) { 
         accept = 1 
-        #include xstar in sp
+        # include xstar in starting points 
         sp <- sort(c(sp, xstar))
+        # check the log_concavity of the density for updated starting points
         check <- logconcav_check(sp)
         if (!check) { stop("The function isn't log concave. Please input a log concave function")}
       }
     }
+    
     sample[i] = xstar
   }
+  
   hist(sample, breaks = 200, probability = T)
   curve(f, add = T, col = "yellow", lty = 2, lwd = 2)
   return(sample)
