@@ -374,5 +374,20 @@ test_that("testing starting point", {
     expect_lt(starting_x1(function(x) dt(x, 3), -2, 89)[2], Inf)
 })
 
-
+# the primary function tests
+test_that("function ars samples correctly", {
+  
+  #tests 
+  sample <- ars(20, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
+  # expect result to be double type
+  expect_type(sample , 'double')
+  
+  # the number of sampled points is correct
+  expect_equal(length(sample), 20)
+  
+  #the sampled points is between min and max
+  expect_lte(max(sample), 10)
+  expect_gte(min(sample), -10)
+  
+})
 
