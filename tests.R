@@ -398,16 +398,17 @@ test_that("log concavity check for input function", {
 
 # Last but not least
 # ars(), Primary function tests
+n <- 300
 test_that("function ars samples normal densities correctly", {
   
   #tests 
-  sample1 <- ars(20, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
+  sample1 <- ars(n, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
   
     # expect result to be double type
     expect_type(sample1, 'double')
     
     # the number of sampled points is correct
-    expect_equal(length(sample1), 20)
+    expect_equal(length(sample1), n)
     
     #the sampled points is between min and max
     expect_lte(max(sample1), 10)
@@ -418,13 +419,13 @@ test_that("function ars samples normal densities correctly", {
 test_that("function ars samples gamma densities(with shape parameter >= 1.)", {
   
   #tests 
-    sample2 <- ars(20, f = function(x) dgamma(x, 5), 0, Inf, c(2, 6))
+    sample2 <- ars(n, f = function(x) dgamma(x, 5), 0, Inf, c(2, 6))
     
     # expect result to be double type
     expect_type(sample2, 'double')
     
     # the number of sampled points is correct
-    expect_equal(length(sample2), 20)
+    expect_equal(length(sample2), n)
     
     #the sampled points is between min and max
     expect_gte(min(sample2), 0)
@@ -433,13 +434,13 @@ test_that("function ars samples gamma densities(with shape parameter >= 1.)", {
 test_that("function ars samples beta densities(with both shape parameters >= 1.)", {
   
   #tests 
-  sample3 <- ars(20, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
+  sample3 <- ars(n, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
   
     # expect result to be double type
     expect_type(sample3, 'double')
     
     # the number of sampled points is correct
-    expect_equal(length(sample3), 20)
+    expect_equal(length(sample3), n)
     
     #the sampled points is between min and max
     expect_lte(max(sample3), 1)
@@ -449,13 +450,13 @@ test_that("function ars samples beta densities(with both shape parameters >= 1.)
 test_that("function ars samples correctly even if the user does not input starting points", {
   
   #tests 
-  sample4 <- ars(20, f = function(x) dnorm(x, 5), -Inf, Inf)
+  sample4 <- ars(n, f = function(x) dnorm(x, 5), -Inf, Inf)
   
     # expect result to be double type
     expect_type(sample4, 'double')
     
     # the number of sampled points is correct
-    expect_equal(length(sample4), 20)
+    expect_equal(length(sample4), n)
 })
 
 
@@ -463,6 +464,22 @@ test_that("function ars() catches non-log-concave cases", {
   
   #tests
     # t-distribution is not log concave
-    expect_error(ars(20, f = function(x) dt(x, 2), -10, 10, c(-2, 3)))
+    expect_error(ars(20, f = function(x) dt(x, 2), -100, 100, c(-2, 3)))
+    # beta distribution with shape parameters < 1 is not log-concave
+    expect_error(ars(20, function(x) dbeta(x, 0.2,0.2) , 0, 1, c(0.1,0.7)))
 })
+
+## test for edge cases
+test_that("function ars samples uniform distribution correctly", {
+  
+  #tests 
+  sample4 <- ars(n, f = function(x) dunif(x), 0, 1)
+  
+  # expect result to be double type
+  expect_type(sample4, 'double')
+  
+  # the number of sampled points is correct
+  expect_equal(length(sample4), n)
+})
+
 
