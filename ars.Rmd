@@ -246,18 +246,16 @@ ars <- function(n, f, min, max, sp = NA){
     return(u_plus)
   }
  
- ##'docstring
-##'for each starting points, we calculate the value of cdf from zi to zi+1. 
-##'we store this as a list, each element corresponding to the cdf of that interval.
-##'we normalise the cdf by dividing by its sum.
-  
-##'docstring
-##'for each starting points, we calculate the value of cdf from zi to zi+1. 
-##'we store this as a list, each element corresponding to the cdf of that interval.
-##'we normalise the cdf by dividing by its sum.
-  
+
   plus.cdf <- function(sp) 
   {
+   #docstring
+#for each starting points, we calculate the value of cdf from zi to zi+1. 
+#we store this as a list, each element corresponding to the cdf of that interval.
+##we normalise the cdf by dividing by its sum.
+  
+
+  
     
     zed = c(min,z(sp),max)
     l = length(zed) - 1
@@ -271,11 +269,12 @@ ars <- function(n, f, min, max, sp = NA){
     return(cdf_vals/normaliser)
   }
 
-##'docstring
-##'sampling from cdf: we pick the cdf interval from which to sample from with probability equal to its value
-##'then we sample a point from that interval uniformly.
+
 
 s_k_sample <- function(sp) {
+#docstring
+#sampling from cdf: we pick the cdf interval from which to sample from with probability equal to its value
+#then we sample a point from that interval uniformly.
   zed <- c(min,z(sp),max)
   probs <- plus.cdf(sp)
   
