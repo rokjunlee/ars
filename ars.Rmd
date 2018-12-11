@@ -368,7 +368,7 @@ s_k_sample = function(sp)
   zed = z(sp)
   sd_cdf = plus.cdf(zed, sp)
   zpct = sd_cdf$s_k_cdf
-  norm.const = sd_cdf$normaliser
+  normaliser = sd_cdf$normaliser
   ub = c(0, zpct, 1)
   
   unif.samp = runif(1)
