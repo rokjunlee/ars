@@ -8,12 +8,7 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
-### Library
-```{r, message=F}
-library(AdapSamp)
-library(rlang)
-library(pracma)
-```
+
 
 #### Steps
 
@@ -112,6 +107,9 @@ numeric_sec_deri <- function(f, x){
     # need some ways to specify x_1 and x_k
     # better to find x_1 as small as possible as long as derivative is positive and density is positive
 starting_x1 <- function(func_x, min_x, max_x){
+  
+  require(tidyverse)
+  
   # First case
   if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
     opt <- optimize(function(x) func_x(x), 
@@ -158,6 +156,11 @@ starting_x1 <- function(func_x, min_x, max_x){
 ```{r}
 ### basic function structure
 ars <- function(n, f, min, max, sp = NA){
+  
+  # load package
+  require(AdapSamp)
+  require(rlang)
+  require(pracma)
   
   
   if (n <= 0 || !is.numeric(n)) 
