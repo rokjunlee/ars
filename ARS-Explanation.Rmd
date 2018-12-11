@@ -26,7 +26,7 @@ Then, we sample **two starting points** using `starting_x1()` function. This fun
 
 
 
-Next step is to be able to accomplish is to determine if the input function is **logarithmically concave or not**. The function should not proceed to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
+Next step is to determine if the input function is **logarithmically concave or not**. The function should not proceed to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
 
 \begin{align*}
   f''(x) = lim_{h \rightarrow 0} \frac{f(x+h)-2f(x)+f(x+h)}{h^{2}}
