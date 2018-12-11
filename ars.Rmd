@@ -183,12 +183,11 @@ ars <- function(n, f, min, max, sp = NA){
   
   h <- function(x) {log(g_func(f,x))}
   dh <- function(x) {pracma::fderiv(h, x, 1)}
-  if (prod(dh(c(min, max))) == 1) { sample <- runif(n, min, max)}
-    else {
   if(sum(is.finite(sp)) < length(sp)) {sp = starting_x1(f, min, max)}
   if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
   sp <- sort(sp)
   sample <- numeric(n)
+  if (prod(dh(sp) == 0) == 1) { sample <- runif(n, min, max); return(sample)} else {
   
   u_func = function(x, sp) 
   {
@@ -341,7 +340,7 @@ s_k_sample <- function(sp) {
 
 ```{r, checking chunk}
 # Checking
-ars(300, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
+ars(300, f = function(x) dnorm(x, 2), -Inf, Inf, c(-2, 3))
 ars(300, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
 ars(300, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2)) 
 ars(300, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))
