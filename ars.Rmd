@@ -14,7 +14,6 @@ editor_options:
 library(AdapSamp)
 library(rlang)
 library(pracma)
-library(tidyverse)
 ```
 
 
@@ -122,8 +121,8 @@ starting_x1 <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
                     c(min_x, max_x), 
                     maximum = TRUE)$maximum
-    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
-    right <- quantile(c(min_x, opt, max_x), 0.51)%>% as.vector()
+    left <- as.vector(quantile(c(min_x, opt, max_x), 0.49))
+    right <- as.vector(quantile(c(min_x, opt, max_x), 0.51))
     return(c(left, right))
     
     # Second case  
@@ -133,8 +132,8 @@ starting_x1 <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
            c(min_x, max_x), 
            maximum = TRUE)$maximum
-  left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
-  right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+  left <- as.vector(quantile(c(min_x, opt, max_x), 0.49) )
+  right <- as.vector(quantile(c(min_x, opt, max_x), 0.51) )
   return(c(left, right))
   } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
               && is.finite(min_x)==TRUE ) {
@@ -142,8 +141,8 @@ starting_x1 <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
                     c(min_x, max_x), 
                     maximum = TRUE)$maximum
-    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
-    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+    left <- as.vector(quantile(c(min_x, opt, max_x), 0.49) )
+    right <- as.vector(quantile(c(min_x, opt, max_x), 0.51) )
     return(c(left, right))
   } else {
     max_x <- 100
@@ -151,8 +150,8 @@ starting_x1 <- function(func_x, min_x, max_x){
     opt <- optimize(function(x) func_x(x), 
                     c(min_x, max_x), 
                     maximum = TRUE)$maximum
-    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
-    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+    left <- as.vector(quantile(c(min_x, opt, max_x), 0.49) )
+    right <- as.vector(quantile(c(min_x, opt, max_x), 0.51) )
     return(c(left, right))
   }
 }
