@@ -18,6 +18,8 @@ Github user name: rokjunlee
 ### Explanation
 Here are some assumptions that we began with. We assume that the the user will input valid density with correct minimum and maximum values of the domain. For example, if the input density is the standard normal density than the minimum and maximum values will be `-Inf` and `Inf`, respectively.
 
+We also started with assuming that the starting points (2) will be provided, just to make computations easier. Then we relaxed those conditions to make the function work without starting points input. 
+
 The very first main task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
 Then, we sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and minimum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector c(minimum_x, 'x-coordinate', maximum_x) and then designate 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then minimum and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
