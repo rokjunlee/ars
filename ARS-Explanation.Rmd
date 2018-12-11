@@ -13,14 +13,18 @@ editor_options:
 Final version of the project resides in RJ's Github account.
 Github user name: rokjunlee
 
-
-
 <!-- The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work. -->
 
+### Explanation
+Here are some assumptions that we began with. We assume that the the user will input valid density with correct minimum and maximum values of the domain. For example, if the input density is the standard normal density than the minimum and maximum values will be `-Inf` and `Inf`, respectively.
 
-For 
+The very first main task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
-The very first main task that our `ars()` needs to be able to accomplish is to determine if the input function is logarithmically concave or not. The function should not move on to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
+Then, we sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and minimum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector c(minimum_x, 'x-coordinate', maximum_x) and then designate 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then minimum and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
+
+
+
+Next step is to be able to accomplish is to determine if the input function is **logarithmically concave or not**. The function should not move on to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
 
 \begin{align*}
   f''(x) = lim_{h \rightarrow 0} \frac{f(x+h)-2f(x)+f(x+h)}{h^{2}}
@@ -28,8 +32,6 @@ The very first main task that our `ars()` needs to be able to accomplish is to d
 , which is also known as the second symmetric derivative [https://en.wikipedia.org/wiki/Second_derivative]. 
 
 After second derivatives were evaluated at several points in the domain, the sign of the largest evaluated value was checked. If the sign is negative, then we accept that the input function is logarithmically concave since all the other evaluated values must also be negative. Otherwise, we stop the function from moving on to the next task.
-
-Next step is to transform the input function $f$ into $g$ which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
 
 
@@ -39,26 +41,35 @@ Next step is to transform the input function $f$ into $g$ which is equal to $cf(
 Although we divided the task as below we all contributed to all the tasks to some extent by checking for errors and making codes faster/better.
 
 #### Malvika Rajeev
-vectorizing computation of Zjs, 
-computing the upper linear hull, 
-computing the cdf, 
-sampling from the exponential density.
+* vectorizing computation of Zjs, 
+
+* computing the upper linear hull, 
+
+* computing the cdf, 
+
+* sampling from the exponential density.
 
 #### Yihuan Song
-The basic structure of the ars function (for loop and while loop)
-The functions of h(x), h'(x), uk(x), lk(x), sk(x), and finding zj's
-The squeezing and rejection tests
-Input validation: Check if the input is reasonable
-check the log-concavity for starting points
+* The basic structure of the ars function (for loop and while loop)
+
+* The functions of h(x), h'(x), uk(x), lk(x), sk(x), and finding zj's
+
+* The squeezing and rejection tests
+
+* Input validation: Check if the input is reasonable
+
+* Check the log-concavity for starting points
 
 
 #### RJ Lee
-Function that checks for log-concavity of the input function
-    by evaluating second derivative numerically
-Function that can join tangent segments
-    Finding tangent lines
-    Simple linear models to find endpoints of each tangent lines
-Function that chooses the starting point: X_1 and X_k (k=2)
-g_func that transforms f into g as described in the paper.
+* g_func that transforms f into g as described in the paper
+
+* Function that checks for log-concavity of the input function by evaluating second derivative numerically
+
+* Function that can join tangent segments
+    - Finding tangent lines
+    - Simple linear models to find endpoints of each tangent lines
+* Function that chooses the starting point: X_1 and X_k (k=2)
+
 
 
