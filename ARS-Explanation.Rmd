@@ -24,7 +24,7 @@ The very first main task that our `ars()` needs to be able to accomplish is to t
 
 Then, we sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and minimum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector `c(minimum_x, 'x-coordinate', maximum_x)` and then designate the 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then minimum and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
 
-
+[[EXPLANATION ON U, L, Z, AND SAMPLING FUNCTION SHOULD GO HERE]]
 
 Next step is to determine if the input function is **logarithmically concave or not**. The function should not proceed to the next task if the input function is not even logarithmically concave. To verify log-concavity, we first created an auxiliary function that simply puts `log()` around the input function. Then the second derivative at numerious points in between the maximum and minimum (if they are given) were computed numerically. In order to numerically evaluate second derivative of the log-function, the following formula was used:
 
@@ -41,6 +41,8 @@ The basic design of the function was synchronous with the general pattern descri
 
 There were some challenges we ran into, like the calculation of exponents tending to infinity. For that, we tried to add sanity tests for input arguments.
 
+
+[[SQUEEZING AND REJECTION TEST EXPALANTION]]
 
 ## Testings
 
