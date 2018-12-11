@@ -458,7 +458,8 @@ test_that("function ars samples correctly even if the user does not input starti
     expect_equal(length(sample4), 20)
 })
 
-test_that("function ars catches non-log-concave cases", {
+
+test_that("function ars() catches non-log-concave cases", {
   
   #tests
     # t -distribution is not log concavie
