@@ -200,6 +200,51 @@ max <- Inf
 f <- function(x) dnorm(x)
 c <- integrate(f, min, max)$value #normalizing constant
 
+
+
+
+starting_x1 <- function(func_x, min_x, max_x){
+  # First case
+  if (is.finite(min_x) && is.finite(max_x)){ # case when max and min of x are given and FINITE
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51)%>% as.vector()
+    return(c(left, right))
+    
+    # Second case  
+  } else if ( (is.infinite(min_x) == TRUE || is.na(min_x)==TRUE)  # min is missing or infinte
+              && is.finite(max_x) == TRUE ) {
+    min_x <- -100
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+    return(c(left, right))
+  } else if ( (is.infinite(max_x) == TRUE || is.na(max_x)==TRUE) # max is missing or infinite
+              && is.finite(min_x)==TRUE ) {
+    max_x <- 100
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+    return(c(left, right))
+  } else {
+    max_x <- 100
+    min_x <- -100
+    opt <- optimize(function(x) func_x(x), 
+                    c(min_x, max_x), 
+                    maximum = TRUE)$maximum
+    left <- quantile(c(min_x, opt, max_x), 0.49) %>% as.vector()
+    right <- quantile(c(min_x, opt, max_x), 0.51) %>% as.vector()
+    return(c(left, right))
+  }
+}
+
+
 ##########################################
 # ------functions-------------------------
 
@@ -309,6 +354,25 @@ test_that("log concavity check for input function", {
     expect_false( logconcav_check(c(1, 5)) ) 
 })
 
+
+# starting_x1
+test_that("testing starting point", {
+  # tests
+    # output should be a length of 2
+    expect_length(starting_x1(function(x) dnorm(x), -2, 3),2)
+    
+    # want starting values to be less than Inf - x1
+    expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[1], Inf)
+    
+    # want starting values to be less than Inf - x2
+    expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[2], Inf)
+    
+    # even when given max of domain is Inf, our starting point should not be
+    expect_lt(starting_x1(function(x) dnorm(x,78), -2, Inf)[2], Inf)
+    
+    # different distribution: t-distribution
+    expect_lt(starting_x1(function(x) dt(x, 3), -2, 89)[2], Inf)
+})
 
 
 
