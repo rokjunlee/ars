@@ -143,8 +143,7 @@ z <- function(support){
 
 
 
-u_k = function(y, support) 
-{
+u_k = function(y, support) {
   u_plus = rep(0, length(y))
   zed = z(support)
   
@@ -157,6 +156,7 @@ u_k = function(y, support)
   }
   return(u_plus)
 }
+
 
 
 plus.cdf = function(x, sp) {
@@ -215,7 +215,7 @@ s_k_sample = function(support)
       return(res)
   }
 
-    #check logconcave
+
 logconcav_check <- function(sp){ #x is starting points given
       # docstring
         # This function finds out numerical value of the second derivative
@@ -256,11 +256,14 @@ c <- integrate(f, min, max)$value #normalizing constant
 test_that("function that numerically evaluates first derivative", {
   
   #tests 
-  # expect result to be double type
-  expect_type(numeric_first_d(function(x) x, 1), 'double')
+    # expect result to be double type
+    expect_type(numeric_first_d(function(x) x, 1), 'double')
+    
+    # first derivative of x^2 is 2x and at x=2, we have 4
+    expect_equal(round(numeric_first_d(function(x) x^2, 2)), 4)
   
-  # first derivative of x^2 is 2x and at x=2, we have 4
-  expect_equal(round(numeric_first_d(function(x) x^2, 2)), 4)
+    # first derivative of x^3 is 3x^2 and at x=3, we have 27
+    expect_equal(round(numeric_first_d(function(x) x^3, 3)), 27)
 })
 
 
@@ -268,81 +271,83 @@ test_that("function that numerically evaluates first derivative", {
 test_that("function that numerically evaluates second derivative", { 
   
   # tests
-  # expect result to be double
-  expect_type(numeric_sec_deri(function(x) x^2, -14), 'double')
-  
-  # second derivative of x^2 is just 2
-  expect_equal(numeric_sec_deri(function(x) x^2, -14), 2)
-  
-  # second derivative of -x^2+2*x is  -2
-  expect_equal(numeric_sec_deri(function(x) -x^2+2*x, -14), -2)
+    # expect result to be double
+    expect_type(numeric_sec_deri(function(x) x^2, -14), 'double')
+    
+    # second derivative of x^2 is just 2
+    expect_equal(numeric_sec_deri(function(x) x^2, -14), 2)
+    
+    # second derivative of -x^2+2*x is  -2
+    expect_equal(numeric_sec_deri(function(x) -x^2+2*x, -14), -2)
 })
 
 
 # g_func
 test_that("g_func function gives the density of the normalized function", {
-      #tests 
-      # expect result to be double type
-     expect_type(g_func(f, c(-2,2)), 'double')
+  #tests 
+    # expect result to be double type
+    expect_type(g_func(f, c(-2,2)), 'double')
       
-      # first derivative of x^2 is 2x and at x=2, we have 4
-     expect_equal(g_func(f, c(-2,2)), dnorm(c(-2,2)))
+    # first derivative of x^2 is 2x and at x=2, we have 4
+    expect_equal(g_func(f, c(-2,2)), dnorm(c(-2,2)))
 })
 
 
 # h
 test_that("h function gives the density of the log of g_func", {
   #tests 
-  # expect result to be double type
-  expect_type(h(c(-2,2)), 'double')
-  
-  # first derivative of x^2 is 2x and at x=2, we have 4
-  expect_equal(h(c(-2,2)), log(dnorm(c(-2,2))))
+    # expect result to be double type
+    expect_type(h(c(-2,2)), 'double')
+    
+    # first derivative of x^2 is 2x and at x=2, we have 4
+    expect_equal(h(c(-2,2)), log(dnorm(c(-2,2))))
 })
 
 
 # dh
 test_that("dh function gives the derivative of the h function", {
   #tests 
-  # expect result to be double type
-  expect_type(dh(c(-2,2)), 'double')
-  
-  # first derivative of x^2 is 2x and at x=2, we have 4
-  expect_equal(dh(c(-2,2)), numeric_first_d(logfunc(f), c(-2,2)))
+    # expect result to be double type
+    expect_type(dh(c(-2,2)), 'double')
+    
+    # first derivative of x^2 is 2x and at x=2, we have 4
+    expect_equal(dh(c(-2,2)), numeric_first_d(logfunc(f), c(-2,2)))
 })
 
 
 # starting_x1
 test_that("testing starting point", {
   # tests
-  # output should be a length of 2
-  expect_length(starting_x1(function(x) dnorm(x), -2, 3),2)
-  
-  # want starting values to be less than Inf - x1
-  expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[1], Inf)
-  
-  # want starting values to be less than Inf - x2
-  expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[2], Inf)
-  
-  # even when given max of domain is Inf, our starting point should not be
-  expect_lt(starting_x1(function(x) dnorm(x,78), -2, Inf)[2], Inf)
-  
-  # different distribution: t-distribution
-  expect_lt(starting_x1(function(x) dt(x, 3), -2, 89)[2], Inf)
+    # output should be a length of 2
+    expect_length(starting_x1(function(x) dnorm(x), -2, 3),2)
+    
+    # want starting values to be less than Inf - x1
+    expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[1], Inf)
+    
+    # want starting values to be less than Inf - x2
+    expect_lt(starting_x1(function(x) dnorm(x), -2, 3)[2], Inf)
+    
+    # even when given max of domain is Inf, our starting point should not be
+    expect_lt(starting_x1(function(x) dnorm(x,78), -2, Inf)[2], Inf)
+    
+    # different distribution: t-distribution
+    expect_lt(starting_x1(function(x) dt(x, 3), -2, 89)[2], Inf)
 })
 
 
 # u_func, l_func, z
 test_that("function z, u_func, l_func gives approproiate values", {
-  # expect result to be double type
-  expect_type(z(c(-2, 1)), 'double')
-  
-  # expect result to be double type
-  expect_type(u_func(0.5, c(-2,2)), 'double')
-  
-  # expect result to be double type
-  expect_type(l_func(0.5, c(-2,2)), 'double')
+  # tests
+    # expect result to be double type
+    expect_type(z(c(-2, 1)), 'double')
+    
+    # expect result to be double type
+    expect_type(u_func(0.5, c(-2,2)), 'double')
+    
+    # expect result to be double type
+    expect_type(l_func(0.5, c(-2,2)), 'double')
 })
+
 
 
 # u_k
@@ -352,6 +357,8 @@ test_that("function z, u_func, l_func gives approproiate values", {
 
 
 # s_k_sample
+
+
 
 
 
@@ -389,37 +396,38 @@ test_that("log concavity check for input function", {
 })
 
 
+# Last but not least
 # ars(), Primary function tests
 test_that("function ars samples normal densities correctly", {
   
   #tests 
   sample1 <- ars(20, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
   
-  # expect result to be double type
-  expect_type(sample1, 'double')
-  
-  # the number of sampled points is correct
-  expect_equal(length(sample1), 20)
-  
-  #the sampled points is between min and max
-  expect_lte(max(sample1), 10)
-  expect_gte(min(sample1), -10)
+    # expect result to be double type
+    expect_type(sample1, 'double')
+    
+    # the number of sampled points is correct
+    expect_equal(length(sample1), 20)
+    
+    #the sampled points is between min and max
+    expect_lte(max(sample1), 10)
+    expect_gte(min(sample1), -10)
 })
 
 
 test_that("function ars samples gamma densities(with shape parameter >= 1.)", {
   
   #tests 
-  sample2 <- ars(20, f = function(x) dgamma(x, 5), 0, Inf, c(2, 6))
-  
-  # expect result to be double type
-  expect_type(sample2, 'double')
-  
-  # the number of sampled points is correct
-  expect_equal(length(sample2), 20)
-  
-  #the sampled points is between min and max
-  expect_gte(min(sample2), 0)
+    sample2 <- ars(20, f = function(x) dgamma(x, 5), 0, Inf, c(2, 6))
+    
+    # expect result to be double type
+    expect_type(sample2, 'double')
+    
+    # the number of sampled points is correct
+    expect_equal(length(sample2), 20)
+    
+    #the sampled points is between min and max
+    expect_gte(min(sample2), 0)
 })
 
 test_that("function ars samples beta densities(with both shape parameters >= 1.)", {
@@ -427,15 +435,15 @@ test_that("function ars samples beta densities(with both shape parameters >= 1.)
   #tests 
   sample3 <- ars(20, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
   
-  # expect result to be double type
-  expect_type(sample3, 'double')
-  
-  # the number of sampled points is correct
-  expect_equal(length(sample3), 20)
-  
-  #the sampled points is between min and max
-  expect_lte(max(sample3), 1)
-  expect_gte(min(sample3), 0)
+    # expect result to be double type
+    expect_type(sample3, 'double')
+    
+    # the number of sampled points is correct
+    expect_equal(length(sample3), 20)
+    
+    #the sampled points is between min and max
+    expect_lte(max(sample3), 1)
+    expect_gte(min(sample3), 0)
 })
 
 test_that("function ars samples correctly even if the user does not input starting points", {
@@ -443,17 +451,17 @@ test_that("function ars samples correctly even if the user does not input starti
   #tests 
   sample4 <- ars(20, f = function(x) dnorm(x, 5), -Inf, Inf)
   
-  # expect result to be double type
-  expect_type(sample4, 'double')
-  
-  # the number of sampled points is correct
-  expect_equal(length(sample4), 20)
+    # expect result to be double type
+    expect_type(sample4, 'double')
+    
+    # the number of sampled points is correct
+    expect_equal(length(sample4), 20)
 })
 
 test_that("function ars catches non-log-concave cases", {
   
-  #tests 
-  expect_error(ars(20, f = function(x) dt(x, 2), -10, 10, c(-2, 3)))
-  
+  #tests
+    # t -distribution is not log concavie
+    expect_error(ars(20, f = function(x) dt(x, 2), -10, 10, c(-2, 3)))
 })
 
