@@ -328,20 +328,20 @@ s_k_sample <- function(sp) {
     }
     sample[i] = xstar
   }
-  histog <- hist(sample, breaks = 100)
-  return(list(sample, histog))
+  hist(sample, breaks = 200, probability = T)
+  curve(f, add = T, col = "yellow", lty = 2, lwd = 2)
+  return(sample)
 }
+```
 
-
-
+```{r, checking chunk}
 # Checking
-ars(10, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
-ars(10, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
-ars(10, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2)) #slow
-ars(20, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))
-#ars(20, f = function(x) dnorm(x), -20, 30, c(-19, 1)) #slow
-ars(20, f = function(x) dgamma(x, 5), 0, 10, c(2,5))
-ars(20, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
+ars(300, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3))
+ars(300, f = function(x) dnorm(x, -1), -10, 10, c(-2, 1))
+ars(300, f = function(x) dnorm(x,-5), -10, 10, c(-8, 2)) 
+ars(300, f = function(x) dnorm(x,5), -10, 10, c(-1, 7))
+ars(300, f = function(x) dgamma(x, 5), 0, 10, c(2,5))
+ars(300, f = function(x) dbeta(x,2,2), 0, 1, c(0.1,0.6))
 
 # not working 
 ars(20, f = function(x) x^2, -100, 100, c(-2,10)) #xstar is NaN in this case
@@ -349,21 +349,11 @@ ars(20, f = function(x) x^2, -100, 100, c(-2,10)) #xstar is NaN in this case
 # non log concave function input
 ars(20, f = function(x) dt(x,3), -100, 100, c(-2,10)) # gives us the correct error
 
-#user not give or give inf as sp
-ars(10, f = function(x) dnorm(x), -10, 10) #infinite loop, xstar never accepted
-#> f<-function(x) dnorm(x)
-#> starting_x(f)
-#[1] -35  35
-#but in this case, (sum(is.finite(sp)) < length(sp)) { sp = starting_x(f, min, max)}) gives starting points of (-10,10)
 
-
-#timing
-system.time(ars(1000, f = function(x) dnorm(x, 2), -10, 10, c(-2, 3)))
- #  user  system elapsed 
- # 6.803   0.101   6.906 
-
+# timing
+system.time(ars(1000, f = function(x) dnorm(x, 2), -Inf, Inf, c(-2, 3)))
+ # user    system elapsed 
+ # 12.966   0.140  13.283
 ```
-
-
 
 
