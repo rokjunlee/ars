@@ -180,7 +180,7 @@ ars <- function(n, f, min, max, sp = NA){
   
   h <- function(x) {log(g_func(f,x))}
   dh <- function(x) {pracma::fderiv(h, x, 1)}
-  if (prod(dh(c(min,max)) == 0) { sample <- runif(n, min, max)}
+  if (prod(dh(c(min,max)) == 1) { sample <- runif(n, min, max)}
     else {
   if(sum(is.finite(sp)) < length(sp)) {sp = starting_x1(f, min, max)}
   if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
