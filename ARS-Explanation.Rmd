@@ -14,7 +14,7 @@ Final version of the project resides in RJ's Github account.
 Github user name: rokjunlee
 
 #### Note 
-If the installation fails  or the help page cannot be displayed correctly, then try running `.rs.restartR()` command and then repeat the installation again.
+If the installation fails, try install the "pracma" and "rlang" package, and then install the ars package again. If the help page cannot be displayed correctly, then try running `.rs.restartR()` command and then repeat the installation again.
 
 Also, sometimes `devtools::install_github('rokjunlee/ars', force = T)` may solve the problem that may arise. 
 
