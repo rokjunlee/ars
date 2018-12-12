@@ -63,11 +63,6 @@ To implement tests, we sourced the ars function and defined all the functions we
 Then, we tested the primary `ars` function for different distributions (such as dnorm, dgamma, and dbeta) to see if the `ars` function samples correctly, including cases where user does not provide the starting points. 
 Lastly, we tested to see that if the input function is not log-concave, we could catch such cases and quit the sampling process as the sampling proceeds.
 
-### Modularity and Vectorization
-
-For modularity, in the package we have every task being performed by separate functions. 
-
-
 ### Specific Contributions of each team member 
 
 Although we divided the task as below, we all contributed to all the tasks to some extent by checking for errors and improving the codes.
@@ -104,7 +99,10 @@ Although we divided the task as below, we all contributed to all the tasks to so
 * Function that can join tangent segments
     - Finding tangent lines
     - Simple linear models to find endpoints of each tangent lines
+
 * Function that chooses the starting point: X_1 and X_k (k=2)
+
+* Created `ars` package
 
 
 ### Sample Results
