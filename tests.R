@@ -1,5 +1,6 @@
 # Load testthat package
 library(testthat)
+source("ars.R")
 
 # ------Functions to be tested------------
 ##########################################
