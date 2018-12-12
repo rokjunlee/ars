@@ -36,7 +36,7 @@ So the input requirements are:
 
 We also started with assuming that the starting points (2) will be provided, just to make computations easier. `ars()` will make sure that the two given starting points are on the opposite sides of the maximum of the input (log) function by checking if the product of the first derivative evaluations at the two starting points are negative. Later, we relaxed those conditions to make the function work without starting points input. The mechanism for choosing two starting points will be described shortly. 
 
-The very first main task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
+The very first task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
 When the user does not provide starting points, `ars()` function will sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and maximum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector `c(minimum_x, 'x-coordinate', maximum_x)` and then designate the 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then the minimum or/and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
 
@@ -51,9 +51,10 @@ Next step is to determine if the input function is **logarithmically concave or 
 
 After the derivatives were evaluated at the starting points, we take the difference of the derivative of two neighbouring starting points to see if the derivative is decreasig. The sign of the largest evaluated value was checked. If the sign is negative, then we accept that the input function is logarithmically concave since all the other evaluated values must also be negative. Otherwise, we stop the function from moving on.
 
-To calculate the linear lower and upperhull (using functions of u_func and l_func), the R function `findInterval()` was used, which helped determine which interval the input 'x' belonged to, and therefore to calculate the upper/lower hull corresponding only to that interval. 
+To calculate the linear lower and upperhull (using functions of u_func and l_func), the R function `findInterval()` was used, which helped determine which interval the input 'x' belonged to, and therefore to calculate the upper/lower hull corresponding only for that interval. 
 
-The computation of Z's was done as described in the formula from the paper. To sample from the exponential upper hull, for every Z's, we calculate the areas between $z_i$ and  $z_i+1$, and store it as a vector. Then to sample, we choose an interval index with probabilities proportional to their areas. From the area then, we use the inverse cdf function (which was pretty easy to calculate because it was a linear function) to calculate the inverse cdf of a randomly sampled uniform probability, with the areas of the all the intervals before that as normalising constants. 
+The computation of Z's was done as described in the formula from the paper. To sample from the exponential upper hull, for every Z's, we calculate the areas between $z_i$ and  $z_i+1$, and store it as a vector. Then to sample, we choose an interval index with probabilities proportional to their areas. 
+Then in that interval, we use the inverse cdf function (which was pretty easy to calculate because it was a linear function) to calculate the inverse cdf of a randomly sampled uniform probability, with the areas of the all the intervals before that specific interval as normalising constants. 
 
 
 For each point (named xstar) randomly generalized using the `s_k_sample` function, we use the squeezing and rejection test as methods of rejecting or accepting. Specifically, if the xstar passes the squeezing test formed by the upper and lower hull functions, then it is accepted at the squeezing step, and thus will not go through the rejection test. Otherwise, if the xstar failed to go through the squeezing test, it will proceed to the rejection test formed by the h density function and the upper hull function. If xstar passes the rejection test, it will be accepted; otherwise, xstar will be rejected. Additionally, if xstar failed to pass the sqeezing test, and once `h(x)` and `dh(x)` are evaluated, we will update the starting point vector by adding xstar to the vector of starting points, and sort the starting points again to ensure that the starting points are in ascending order. 
@@ -77,6 +78,8 @@ Although we divided the task as below, we all contributed to all the tasks to so
 
 #### Malvika Rajeev
 * Creating a function to verctorise the computations of Z's.
+
+* Specific cases of constant/uniform density
 
 * computing the upper linear hull, 
 
