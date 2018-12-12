@@ -332,28 +332,31 @@ test_that("function z, u_func, l_func gives approproiate values", {
 
 
 # plus.cdf
-test_that("plus.cdf functions returns legitimate values, adding to 1"){
-              #tests
- #expect that the probabilities of the intervals add to 1             
-testthat::expect_equal(sum(plus.cdf(sp)), 1)
-              
- #expect that the probabilities add to 1
-testthat::expect_gt(product(plus.cdf(sp), 0)             
+sum <- sum(plus.cdf(sp))
+prod <- prod(plus.cdf(sp))
+test_that("plus.cdf functions returns legitimate values, adding to 1", {
+  #tests
+  #expect that the probabilities of the intervals add to 1             
+  expect_equal(sum, 1)
+  
+  #expect that the probabilities are non-negative
+  expect_gt(prod, 0)             
+})         
               }
               
               
 
 
 # s_k_sample
-test_that("samples are generated within the domain"){
-       #tests
-        f <<- function(x) dbeta(x,3,3)
-         sp <<- c(0.1,0.6)
-         min <<- 0
-         mac <<- 1         
-        expect_gt(s_k_sample(sp),0)
-        expect_lt(s_k_sample(sp),1)          
- }
+test_that("samples are generated within the domain",{
+  #tests
+  f <<- function(x) dbeta(x,3,3)
+  sp <<- c(0.1,0.6)
+  min <<- 0
+  mac <<- 1         
+  expect_gt(s_k_sample(sp),0)
+  expect_lt(s_k_sample(sp),1)          
+})
 
 
 
