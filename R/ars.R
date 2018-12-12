@@ -134,7 +134,7 @@ ars <- function(n, f, min, max, sp = NA){
   # Check if the user provides starting points
   if(sum(is.finite(sp)) < length(sp)) {sp = starting_x1(f, min, max)}
   # Check if the starting points are in opposite sides of the density's maximum
-  if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides the maximum")}
+  if( prod(dh(sp)) > 0 ) {stop("Starting points must be in opposite sides of the maximum of log concave function")}
   sp <- sort(sp)
   # Initialize sample
   sample <- numeric(n)
