@@ -38,13 +38,13 @@ We also started with assuming that the starting points (2) will be provided, jus
 
 The very first main task that our `ars()` needs to be able to accomplish is to transform the **input function $f$ into $g$**, which is equal to $cf(x)$ for some constant $c$. We created function so that $c$ equals $\frac{1}{\int_{D} f(x)}$ to make sure that function $g(x)$ becomes a sensible density function that integrates to one over its support. 
 
-When the user does not provide starting points, `ars()` function will sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and minimum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector `c(minimum_x, 'x-coordinate', maximum_x)` and then designate the 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then minimum and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
+When the user does not provide starting points, `ars()` function will sample **two starting points** using `starting_x1()` function. This function takes the input function, minimum and maximum values of the domain. If both minimum and maximum values are finite, then the function will locate the 'x-coordinate', at which the maximum of the density function occurs. Then we create a vector `c(minimum_x, 'x-coordinate', maximum_x)` and then designate the 49 percentile and 51 percentile as the first `x_1` and `x_2` points to start the adaptive rejection sampling. If however, either minimum or maximum (or both) is non-finite value, then the minimum or/and maximum will be replaced with -100 and 100, respectively. Then the procedure involving 49 and 51 percentile as above are carried out to choose the first `x_1` and `x_2` points to start the adaptive rejection sampling.
 
 ###A note on starting points and exponential distributions
-Our function is generally robust in creating starting points if not provided. If the user provides starting points that are not comptabile for rejection sampling, an error will be produced.
+Our function is generally robust in creating starting points if not provided. If the user provides starting points that are not comptabile for the adaptive rejection sampling, an error will be produced.
 For exponential distributions, sampling from the cdf of the upper hull works, but the function in general is not being able to compute greater than ~20 points. This is because after a certain number of points are sampled, it fails the log concavity test.
-Another condition we've added is to ascertain if the input density is constant, i.e uniform (either dunif() or any constant function), and then just sample uniformly using runif from the domain. 
 
+Another condition we have added is to ascertain if the input density is constant, i.e uniform (either `dunif()` or any constant function), and then just sample uniformly using `runif()` from the domain. 
 
 
 Next step is to determine if the input function is **logarithmically concave or not**. The function should not proceed if the input function is not even logarithmically concave. To verify log-concavity, we first created the logconcav_check function that would calculate the derivative of the log of the normalized function each time we update our starting points as calculation proceeds. 
@@ -56,17 +56,19 @@ To calculate the linear lower and upperhull (using functions of u_func and l_fun
 The computation of Z's was done as described in the formula from the paper. To sample from the exponential upper hull, for every Z's, we calculate the areas between $z_i$ and  $z_i+1$, and store it as a vector. Then to sample, we choose an interval index with probabilities proportional to their areas. From the area then, we use the inverse cdf function (which was pretty easy to calculate because it was a linear function) to calculate the inverse cdf of a randomly sampled uniform probability, with the areas of the all the intervals before that as normalising constants. 
 
 
+For each point (named xstar) randomly generalized using the `s_k_sample` function, we use the squeezing and rejection test as methods of rejecting or accepting. Specifically, if the xstar passes the squeezing test formed by the upper and lower hull functions, then it is accepted at the squeezing step, and thus will not go through the rejection test. Otherwise, if the xstar failed to go through the squeezing test, it will proceed to the rejection test formed by the h density function and the upper hull function. If xstar passes the rejection test, it will be accepted; otherwise, xstar will be rejected. Additionally, if xstar failed to pass the sqeezing test, and once `h(x)` and `dh(x)` are evaluated, we will update the starting point vector by adding xstar to the vector of starting points, and sort the starting points again to ensure that the starting points are in ascending order. 
 
-For each point(named xstar) randomly generalized using the s_k_sample function, we use the squeezing and rejection test as methods of rejecting or accepting. Specifically, if the xstar passes the squeezing test formed by the upper and lower hull functions, then it is accepted at the squeezing step, and will thus will not go through the rejection test. Otherwise, if the xstar failed to go through the squeezing test, it will proceed to the rejection test formed by the h density function and the upper hull function. If xstar passes the rejection test, it will be accepted; otherwise, xstar will be rejected. Additionally, if xstar failed to pass the sqeezing test, and once h(x) and dh(x) are evaluated, we will update the starting point vector by adding xstar to the vector of starting points, and sort the starting points again to ensure that the starting points are in ascending order. 
-
-The while loop in the ars function will allow us to repeatedly sample xstar using the s_k_sample function, until we have an xstar that is accepted, and the accepted xstar will be added as one point in our final sample. We will continue this process as a for loop until we have n accepted points sampled. 
+The while loop in the `ars()` function will allow us to repeatedly sample xstar using the `s_k_sample` function until we have an xstar that is accepted, and the accepted xstar will be added as one point in our final sample. We will continue this process as a for loop until we have n accepted points sampled. 
 
 
 ### Testings
 
 To test the package, we created the test.R file, located in the tests directory of the package.
-To implement tests, we sourced the ars function and defined all the functions we used in the ars function. Using `test_that()`, we first tested all the Auxiliary functions (such as `numeric_first_d`, `numeric_sec_deri`, `starting_x1`) and functions defined inside the ars function (such as logconcav_check, u_func, l_func, g_func, h, and dh) to check if these function outputs are of reasonable types and values. 
-Then, we tested the primary `ars` function for different distributions (such as dnorm, dgamma, and dbeta) to see if the `ars` function samples correctly, including cases where user does not provide the starting points. 
+
+To implement tests, we sourced the `ars` function and defined all the functions we used in the `ars` function. Using `test_that()`, we first tested all the Auxiliary functions (such as `numeric_first_d`, `numeric_sec_deri`, `starting_x1`) and functions defined inside the ars function (such as `logconcav_check`, `u_func`, `l_func`, `g_func`, `h`, and `dh`) to check if these function outputs are of reasonable types and values. 
+
+Then, we tested the primary `ars` function for different distributions (such as `dnorm`, `dgamma`, and `dbeta`) to see if the `ars` function samples correctly, including cases where the user does not provide the starting points. 
+
 Lastly, we tested to see that if the input function is not log-concave, we could catch such cases and quit the sampling process as the sampling proceeds.
 
 ### Specific Contributions of each team member 
@@ -117,4 +119,4 @@ Figure below is a correctly working output where we have 1000 samples, the input
 
 ![sample result 1](image/ars(1000, dnorm(x,2), -Inf, Inf, c(-2,3)).png)
 
-The `ars()` automatically creates a density histogram using output of the `ars()` function, and then on top of the histogram the true density curve is drawn in yellow dotted line. Fortunately we observe similarity between the density histogram and the true density curve.
+The `ars()` automatically creates a density histogram using output of the `ars()` function, and then on top of the histogram the true density curve is drawn in yellow dotted line. Fortunately, we observe similarity between the density histogram and the true density curve.
