@@ -44,7 +44,7 @@ When the user does not provide starting points, `ars()` function will sample **t
 Our function is generally robust in creating starting points if not provided. If the user provides starting points that are not comptabile for the adaptive rejection sampling, an error will be produced.
 For exponential distributions, sampling from the cdf of the upper hull works, but the function in general is not being able to compute greater than ~20 points. This is because after a certain number of points are sampled, it fails the log concavity test.
 
-Another condition we have added is to ascertain if the input density is constant, i.e uniform (either `dunif()` or any constant function), and then just sample uniformly using `runif()` from the domain. 
+Another condition we have added is to ascertain if the input density is constant, i.e uniform, and then just sample uniformly using `runif()` from the domain. 
 
 
 Next step is to determine if the input function is **logarithmically concave or not**. The function should not proceed if the input function is not even logarithmically concave. To verify log-concavity, we first created the logconcav_check function that would calculate the derivative of the log of the normalized function each time we update our starting points as calculation proceeds. 
@@ -79,7 +79,7 @@ Although we divided the task as below, we all contributed to all the tasks to so
 #### Malvika Rajeev
 * Creating a function to verctorise the computations of Z's.
 
-* Specific cases of constant/uniform density
+* Specific case of uniform density
 
 * computing the upper linear hull, 
 
