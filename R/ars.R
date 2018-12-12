@@ -85,7 +85,6 @@ starting_x1 <- function(func_x, min_x, max_x){
 #'
 #' Conduct adaptive rejection sampling for logarithmically concave input function
 #'
-#' @import AdapSamp
 #' @import rlang
 #' @import pracma
 #'
