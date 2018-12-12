@@ -64,11 +64,11 @@ The while loop in the `ars()` function will allow us to repeatedly sample xstar 
 
 ### Testings
 
-To test the package, we created the test.R file, located in the tests directory of the package.
+To test the package, we created the testthat.R file, located in the tests directory of the package.
 
 To implement tests, we sourced the `ars` function and defined all the functions we used in the `ars` function. Using `test_that()`, we first tested all the Auxiliary functions (such as `numeric_first_d`, `numeric_sec_deri`, `starting_x1`) and functions defined inside the ars function (such as `logconcav_check`, `u_func`, `l_func`, `g_func`, `h`, and `dh`) to check if these function outputs are of reasonable types and values. 
 
-Then, we tested the primary `ars` function for different distributions (such as `dnorm`, `dgamma`, and `dbeta`) to see if the `ars` function samples correctly, including cases where the user does not provide the starting points. 
+Then, we tested the primary `ars` function for different distributions (such as `dnorm`, `dgamma`, and `dbeta`) to see if the `ars` function samples correctly, including cases where the user does not provide the starting points. Additionally, we tested the adjustment made to the dunif case.
 
 Lastly, we tested to see that if the input function is not log-concave, we could catch such cases and quit the sampling process as the sampling proceeds.
 
