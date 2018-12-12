@@ -13,6 +13,11 @@ editor_options:
 Final version of the project resides in RJ's Github account.
 Github user name: rokjunlee
 
+#### Note 
+If the installation fails, then try running `.rs.restartR()` command and then repeat the installation again.
+
+Also, sometimes `devtools::install_github('rokjunlee/ars', force = T)` may solve the problem that may arise. 
+
 <!-- The description does not need to be more than a few pages, but should describe the approach you took in terms of functions/modularity/object-oriented programming, and the testing that you carried out. It must include a paragraph describing the specific contributions of each team member and which person/people were responsible for each component of the work. -->
 
 ### Explanation
