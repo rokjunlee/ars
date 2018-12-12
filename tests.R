@@ -342,7 +342,7 @@ test_that("plus.cdf functions returns legitimate values, adding to 1", {
   #expect that the probabilities are non-negative
   expect_gt(prod, 0)             
 })         
-              }
+              
               
               
 
