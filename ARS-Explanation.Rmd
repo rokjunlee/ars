@@ -53,7 +53,7 @@ Lastly, we tested to see that if the input function is not log-concave, we could
 
 ### Modularity and Vectorization
 
-For modularity, our ars package 
+For modularity, in the package we have every task being performed by separate functions. 
 
 
 ### Specific Contributions of each team member 
@@ -61,13 +61,14 @@ For modularity, our ars package
 Although we divided the task as below, we all contributed to all the tasks to some extent by checking for errors and improving the codes.
 
 #### Malvika Rajeev
-* vectorizing computation of Zjs, 
+* Creating a function to verctorise the computations of Z's.
 
 * computing the upper linear hull, 
 
-* computing the cdf, 
+* computing the cdf
 
-* sampling from the exponential densit using inverse cdf method
+* sampling from the exponential density using inverse cdf method.
+
 
 #### Yihuan Song
 * The basic structure of the ars function (for loop and while loop)
